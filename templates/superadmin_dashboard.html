@@ -1,0 +1,216 @@
+{% extends "superadmin_base.html" %}
+{% block title %}İdarə paneli{% endblock %}
+
+{% block extra_css %}
+<style>
+.stats{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(190px,1fr));
+    gap:16px;
+    margin-bottom:22px;
+}
+
+.stat{
+    padding:19px;
+    border:1px solid var(--line);
+    border-radius:16px;
+    background:var(--card);
+    box-shadow:0 7px 18px rgba(25,65,47,.035);
+}
+
+.stat-top{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:18px;
+}
+
+.stat small{
+    color:var(--muted);
+    font-size:13px;
+    font-weight:600;
+}
+
+.stat-icon{
+    width:35px;
+    height:35px;
+    display:grid;
+    place-items:center;
+    border-radius:10px;
+    background:var(--mint);
+    color:var(--green-dark);
+    font-size:17px;
+}
+
+.stat b{
+    font-size:30px;
+    letter-spacing:-1px;
+}
+
+.panel-head{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:15px;
+    margin-bottom:15px;
+}
+
+.panel-head h2{
+    margin:0;
+    font-size:17px;
+}
+
+.table-wrap{overflow-x:auto}
+
+table.t{
+    width:100%;
+    min-width:650px;
+    border-collapse:collapse;
+}
+
+table.t th,
+table.t td{
+    padding:14px 12px;
+    border-bottom:1px solid var(--line);
+    text-align:left;
+    font-size:14px;
+}
+
+table.t th{
+    color:var(--muted);
+    font-size:12px;
+    font-weight:800;
+    letter-spacing:.5px;
+    text-transform:uppercase;
+}
+
+table.t tr:last-child td{border-bottom:0}
+
+.institution-name{
+    color:var(--text);
+    font-weight:700;
+}
+
+.admin-list{
+    color:var(--muted);
+    font-size:13px;
+}
+
+.table-action{
+    display:inline-block;
+    padding:8px 11px;
+    border-radius:8px;
+    background:var(--mint);
+    color:var(--green-dark);
+    font-size:13px;
+    font-weight:700;
+    text-decoration:none;
+}
+
+.empty{
+    padding:28px 10px;
+    color:var(--muted);
+    text-align:center;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="top">
+    <div>
+        <p class="kicker">Sistem icmalı</p>
+        <h1>Superadmin paneli</h1>
+        <p class="sub">Müəssisələri və sistem istifadəçilərini idarə et.</p>
+    </div>
+
+    <a class="btn" href="{% url 'institution_create' %}">
+        ＋ Yeni müəssisə
+    </a>
+</div>
+
+<div class="stats">
+    <div class="stat">
+        <div class="stat-top">
+            <small>Müəssisələr</small>
+            <div class="stat-icon">⌂</div>
+        </div>
+        <b>{{ institution_count }}</b>
+    </div>
+
+    <div class="stat">
+        <div class="stat-top">
+            <small>Adminlər</small>
+            <div class="stat-icon">♙</div>
+        </div>
+        <b>{{ admin_count }}</b>
+    </div>
+
+    <div class="stat">
+        <div class="stat-top">
+            <small>Müəllimlər</small>
+            <div class="stat-icon">◉</div>
+        </div>
+        <b>{{ teacher_count }}</b>
+    </div>
+
+    <div class="stat">
+        <div class="stat-top">
+            <small>Tələbələr</small>
+            <div class="stat-icon">◌</div>
+        </div>
+        <b>{{ student_count }}</b>
+    </div>
+</div>
+
+<div class="panel">
+    <div class="panel-head">
+        <h2>Müəssisələr</h2>
+    </div>
+
+    <div class="table-wrap">
+        <table class="t">
+            <thead>
+                <tr>
+                    <th>Müəssisə</th>
+                    <th>Adminlər</th>
+                    <th>Yaradılıb</th>
+                    <th></th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for inst in institutions %}
+                <tr>
+                    <td class="institution-name">{{ inst.name }}</td>
+
+                    <td class="admin-list">
+                        {% for a in inst.admins %}
+                            {{ a.first_name }} {{ a.last_name }}
+                            ({{ a.username }}){% if not forloop.last %}, {% endif %}
+                        {% empty %}
+                            Admin yoxdur
+                        {% endfor %}
+                    </td>
+
+                    <td>{{ inst.created_at|date:"d.m.Y" }}</td>
+
+                    <td>
+                        <a class="table-action"
+                           href="{% url 'institution_admin_create' inst.id %}">
+                            ＋ Admin
+                        </a>
+                    </td>
+                </tr>
+
+                {% empty %}
+                <tr>
+                    <td colspan="4" class="empty">
+                        Hələ heç bir müəssisə yaradılmayıb.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

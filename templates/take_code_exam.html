@@ -1,0 +1,874 @@
+{% load task_format %}
+<!DOCTYPE html>
+<html lang="az">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{ exam.title }} — ExamGuard</title>
+<style>
+  :root{
+    --bg:#0f172a; --glass:rgba(255,255,255,.07); --line:rgba(255,255,255,.13);
+    --txt:#f8fafc; --mut:#94a3b8; --p1:#ec4899; --p2:#8b5cf6; --ok:#34d399; --bad:#f87171; --warn:#fbbf24;
+  }
+  *{box-sizing:border-box}
+
+  body{
+    margin:0; min-height:100vh; color:var(--txt); font-family:Segoe UI,Arial,sans-serif;
+    background:radial-gradient(circle at top left,#312e81 0%,transparent 35%),
+               radial-gradient(circle at bottom right,#7e22ce 0%,transparent 35%),var(--bg);
+    background-attachment:fixed;
+  }
+  .card{background:var(--glass);border:1px solid var(--line);border-radius:18px;backdrop-filter:blur(16px)}
+  pre{margin:0;font-family:Consolas,"Courier New",monospace;font-size:14px;white-space:pre-wrap;word-break:break-word}
+
+  .layout{display:grid;grid-template-columns:340px minmax(0,1fr);gap:20px;max-width:1400px;margin:0 auto;padding:20px}
+.task-desc code {
+  background: rgba(255,255,255,0.12);
+  color: #7ee0ff;
+  padding: 1px 6px;
+  border-radius: 4px;
+}
+.task-code {
+  background: rgba(0,0,0,0.35);
+  border: 1px solid rgba(255,255,255,0.12);
+  padding: 12px 14px;
+  border-radius: 8px;
+  overflow-x: auto;
+  line-height: 1.6;
+}
+.task-code code {
+  background: none;
+  color: #e6edf3;
+  padding: 0;
+}
+.task-h { margin: 18px 0 8px; color: #fff; }
+.task-list li { margin-bottom: 6px; }
+  /* Sol panel */
+  .page{max-width:1400px;margin:0 auto;padding:20px 20px 0}
+  .topbar{display:flex;align-items:center;gap:16px;padding:12px 20px}
+  .topbar .brand{margin:0}
+  .topbar .sep{width:1px;height:24px;background:var(--line)}
+  .topbar .ttl{font-weight:600}
+  .layout{padding-top:16px}
+  aside.side{position:sticky;top:20px;align-self:start;max-height:calc(100vh - 40px);overflow:auto;
+             display:flex;flex-direction:column;gap:14px;padding-right:4px}
+  .pnl{padding:16px 18px}
+  .pnl h3{margin:0 0 12px;padding-bottom:10px;font-size:16px;border-bottom:1px solid var(--line);
+          display:flex;justify-content:space-between;align-items:center;gap:10px}
+  .row{display:flex;justify-content:space-between;gap:12px;padding:5px 0;font-size:14px}
+  .row .k{color:var(--mut)} .row .v{font-weight:600;text-align:right;word-break:break-word}
+  .row b{font-weight:700}
+  .row.ok b{color:var(--ok)} .row.warnrow b{color:var(--warn)}
+  .timer-row b{font-size:20px;letter-spacing:.04em}
+  .timer-row.low b{color:#fecaca}
+  .selrow{display:flex;align-items:center;gap:12px}
+  #taskSelect{display:none}
+  .langsw{display:flex;gap:2px;padding:3px;border-radius:10px;background:rgba(255,255,255,.08);border:1px solid var(--line)}
+  .langsw button{border:0;background:transparent;color:var(--mut);font:inherit;font-weight:700;font-size:13px;padding:6px 11px;border-radius:8px;cursor:pointer}
+  .langsw button.on{background:linear-gradient(135deg,var(--p1),var(--p2));color:#fff}
+  .dd{position:relative;flex:1;min-width:0}
+  .dd-btn{width:100%;display:flex;align-items:center;gap:12px;padding:11px 14px;border-radius:12px;font:inherit;font-weight:600;
+          color:#fff;cursor:pointer;text-align:left;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.2)}
+  .dd-btn:hover,.dd.open .dd-btn{border-color:#c084fc}
+  .dd-btn .arrow{margin-left:auto;color:var(--mut)}
+  .dd-list{position:absolute;left:0;right:0;top:calc(100% + 6px);z-index:50;max-height:55vh;overflow:auto;padding:6px;
+           border-radius:14px;background:rgba(15,20,45,.98);border:1px solid rgba(255,255,255,.2);box-shadow:0 18px 40px rgba(0,0,0,.5)}
+  .dd-list[hidden]{display:none}
+  .dd-item{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:9px;cursor:pointer;font-size:14px}
+  .dd-item:hover{background:rgba(255,255,255,.09)}
+  .dd-item.cur{background:rgba(139,92,246,.25)}
+  .dd-item .n{flex:none;width:30px;color:var(--mut);text-align:right}
+  .dd-item .t,.dd-btn .t{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .dd-item .p{flex:none;color:var(--mut);font-size:12px}
+  .bdg{flex:none;min-width:64px;text-align:center;padding:3px 9px;border-radius:999px;font-size:12px;font-weight:600;
+       background:rgba(255,255,255,.07);color:var(--mut)}
+  .bdg.full{background:rgba(52,211,153,.18);color:var(--ok)}
+  .bdg.part{background:rgba(251,191,36,.18);color:var(--warn)}
+  .bdg.zero{background:rgba(248,113,113,.18);color:var(--bad)}
+  .chip{padding:8px 14px;border-radius:10px;background:rgba(255,255,255,.1);border:1px solid var(--line);font-size:14px;white-space:nowrap}
+  .toolbar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin:16px 0 10px;padding:10px 14px}
+  .toolbar .btns{display:flex;gap:10px;flex-wrap:wrap}
+  .toolbar .btn{padding:9px 16px;font-size:14px}
+  .btn.reset{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.2)}
+  .btn.finish{width:auto;padding:8px 14px;font-size:13px}
+  .brand{font-weight:700;font-size:18px;margin-bottom:14px}
+  .brand span{color:var(--p1)}
+  .lbl{display:block;font-size:12px;color:var(--mut);text-transform:uppercase;letter-spacing:.05em;margin:0 0 4px}
+  .val{font-weight:600;margin-bottom:12px;word-break:break-word}
+  .timer{text-align:center;padding:12px;border-radius:14px;margin-bottom:14px;
+         background:rgba(245,158,11,.14);border:1px solid rgba(251,191,36,.4);color:#fef3c7}
+  .timer b{display:block;font-size:32px;letter-spacing:.04em}
+  .timer.low{background:rgba(239,68,68,.18);border-color:rgba(239,68,68,.6);color:#fecaca}
+  .total{display:flex;justify-content:space-between;padding:10px 12px;border-radius:12px;margin-bottom:12px;
+         background:rgba(255,255,255,.06);border:1px solid var(--line)}
+  .total b{color:var(--ok)}
+  ul.tasks{list-style:none;margin:0 0 14px;padding:0}
+  .st-item{display:flex;justify-content:space-between;gap:8px;padding:9px 11px;margin-bottom:6px;border-radius:10px;
+           font-size:14px;cursor:pointer;background:rgba(255,255,255,.05);border:1px solid transparent}
+  .st-item:hover{background:rgba(255,255,255,.1)}
+  .st-item.cur{border-color:#c084fc;background:rgba(139,92,246,.2)}
+  .st-item .badge{color:var(--mut);white-space:nowrap}
+  .st-item.done .badge{color:var(--ok);font-weight:600}
+  .warn{display:flex;justify-content:space-between;padding:10px 12px;border-radius:12px;margin-bottom:12px;
+        background:rgba(255,255,255,.05);border:1px solid var(--line);font-size:14px}
+  .warn b{color:var(--warn)}
+  ul.notes{list-style:none;margin:0;padding:0;max-height:240px;overflow:auto}
+  ul.notes li{font-size:14px;padding:9px 11px;margin-bottom:6px;border-radius:8px;line-height:1.4;
+              background:rgba(255,255,255,.05);border-left:3px solid var(--mut)}
+  ul.notes li.ok{border-left-color:var(--ok)}
+  ul.notes li.warn{border-left-color:var(--warn)}
+  ul.notes li.bad{border-left-color:var(--bad)}
+  ul.notes small{display:block;color:var(--mut);font-size:11px;margin-top:2px}
+  .btn{border:0;color:#fff;font-weight:600;font-size:15px;padding:12px 24px;border-radius:12px;cursor:pointer;font-family:inherit}
+  .btn.finish{background:rgba(239,68,68,.25);border:1px solid rgba(239,68,68,.6)}
+  .btn.run{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25)}
+  .btn.submit{background:linear-gradient(135deg,var(--p1),var(--p2));box-shadow:0 8px 22px rgba(168,85,247,.35)}
+  .btn:disabled{opacity:.5;cursor:wait}
+  .btn:hover:not(:disabled){transform:translateY(-2px)}
+
+  /* Əsas hissə */
+  select{width:100%;padding:12px 14px;border-radius:12px;font:inherit;font-weight:600;color:#fff;margin-bottom:16px;
+         background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.2);cursor:pointer}
+  select option{color:#111}
+  .desc{margin-bottom:0}
+  .desc-card{padding:16px 20px;margin-bottom:0;background:rgba(18,22,48,.97)}
+  .desc-card .dh{margin:0 0 10px;padding-bottom:10px;font-size:16px;border-bottom:1px solid var(--line);
+                 display:flex;justify-content:space-between;align-items:center;gap:10px}
+  .desc-card .dh small{color:#67e8f9;font-weight:600;font-size:12px}
+  .desc-scroll{max-height:36vh;overflow:auto;padding-right:10px}
+  .desc-scroll::-webkit-scrollbar,.code-area::-webkit-scrollbar{width:10px;height:10px}
+  .desc-scroll::-webkit-scrollbar-thumb,.code-area::-webkit-scrollbar-thumb{background:rgba(255,255,255,.25);border-radius:6px}
+  .desc-card small{color:#67e8f9;font-weight:600}
+  .desc-card h2{margin:6px 0;font-size:20px;line-height:1.4}
+  .pts{color:var(--mut);font-size:13px}
+  .samples{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}
+  .box{padding:10px 12px;border-radius:10px;background:rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.12)}
+
+  /* Redaktor: rəngləmə üçün üst-üstə iki qat */
+  .editor-wrap{display:flex;min-height:400px;border-radius:14px;overflow:hidden;
+               background:rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.18)}
+  .editor-wrap:focus-within{border-color:#c084fc}
+  #gutter,#hl,#editor{
+    font-family:Consolas,"Courier New",monospace;font-size:15px;line-height:1.55;
+    font-variant-ligatures:none;letter-spacing:0;tab-size:4;margin:0;
+  }
+  #gutter{flex:none;width:52px;padding:16px 10px 16px 0;text-align:right;color:#64748b;overflow:hidden;
+          user-select:none;white-space:pre;background:rgba(0,0,0,.22);border-right:1px solid rgba(255,255,255,.1)}
+  .code-area{flex:1;min-width:0;overflow-x:auto;overflow-y:hidden}
+  .code-inner{position:relative;min-width:100%;width:max-content;min-height:400px}
+  #hl,#editor{padding:16px 14px;border:0;white-space:pre}
+  #hl{position:relative;min-height:400px;pointer-events:none;color:#e2e8f0}
+  #editor{position:absolute;top:0;left:0;width:100%;height:100%;resize:none;outline:none;overflow:hidden;
+          background:transparent;color:transparent;caret-color:#fff}
+  #editor::selection{background:rgba(139,92,246,.45)}
+  .t-k{color:#c084fc} .t-b{color:#67e8f9} .t-s{color:#86efac}
+  .t-c{color:#64748b;font-style:italic} .t-n{color:#fbbf24} .t-f{color:#60a5fa}
+
+  #results{margin-top:16px}
+  .res{padding:12px 14px;border-radius:12px;margin-bottom:10px;background:rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.15)}
+  .res.ok{border-color:var(--ok)} .res.bad{border-color:var(--bad)}
+  .res h4{margin:0 0 8px;font-size:14px}
+  .res.ok h4{color:var(--ok)} .res.bad h4{color:var(--bad)}
+  .res .cols{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+  .res .err{color:var(--bad)}
+  .info{color:var(--mut);font-size:14px}
+  .actions{display:flex;gap:12px;justify-content:space-between;align-items:center;flex-wrap:wrap;margin-top:18px}
+  .hint{color:var(--mut);font-size:13px;margin-left:8px}
+
+  @media(max-width:900px){
+    .layout{grid-template-columns:1fr}
+    aside.side{position:static;max-height:none}
+    .desc{position:static}
+    .samples,.res .cols{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+<form id="examForm" method="post">
+  {% csrf_token %}
+  <div class="page">
+    <header class="card topbar">
+      <div class="brand">Exam<span>Guard</span></div>
+      <div class="sep"></div>
+      <div class="ttl">{{ exam.title }}</div>
+    </header>
+  </div>
+
+  <div class="layout">
+
+    <!-- SOL SÜTUN -->
+    <aside class="side">
+      <section class="card pnl">
+        <h3>İmtahan <button type="submit" class="btn finish">İmtahanı bitir</button></h3>
+        <div class="row"><span class="k">Ad</span><span class="v">{{ exam.title }}</span></div>
+        <div class="row"><span class="k">Maksimum bal</span><span class="v" id="maxScore">0</span></div>
+        <div class="row timer-row" id="timerBox"><span class="k">Qalan vaxt</span><b id="timer">--:--</b></div>
+      </section>
+
+      <section class="card pnl">
+        <h3>Tələbə məlumatı</h3>
+        <div class="row"><span class="k">Ad</span><span class="v">{{ request.user.get_full_name|default:request.user.username }}</span></div>
+        <div class="row ok"><span class="k">Bal</span><span><b id="totalScore">0</b> / <span id="maxScore2">0</span></span></div>
+        <div class="row ok"><span class="k">Həll olunmuş</span><b id="solvedCount">0 / {{ tasks|length }}</b></div>
+        <div class="row warnrow"><span class="k">Xəbərdarlıqlar</span><b id="warnCount">0</b></div>
+      </section>
+
+      <section class="card pnl">
+        <h3>Bildirişlər</h3>
+        <ul class="notes" id="notes"></ul>
+      </section>
+
+      <ul class="tasks" hidden>
+        {% for task in tasks %}
+          <li class="st-item" id="st{{ task.id }}" data-id="{{ task.id }}"
+              data-points="{{ task.points|stringformat:'f' }}"
+              data-score="{% if task.sub %}{{ task.sub.score|stringformat:'f' }}{% endif %}">
+            <span>{{ forloop.counter }}. {{ task.title|truncatechars:30 }}</span>
+            <span class="badge">—</span>
+          </li>
+        {% endfor %}
+      </ul>
+    </aside>
+
+    <!-- SAĞ SÜTUN -->
+    <main>
+      {% if tasks %}
+      <section class="card pnl" style="position:relative;z-index:60">
+        <h3>Həll ediləcək tapşırığı seç</h3>
+        <div class="selrow">
+          <select id="taskSelect">
+            {% for task in tasks %}
+              <option value="{{ task.id }}" data-title="{{ task.title|truncatechars:90 }}" data-title-en="{{ task.t_en|truncatechars:90 }}" data-title-ru="{{ task.t_ru|truncatechars:90 }}" data-lang="{{ task.language }}" data-pts="{{ task.points|stringformat:'f' }}">{{ forloop.counter }}. {{ task.title|truncatechars:70 }}</option>
+            {% endfor %}
+          </select>
+          <div class="dd" id="dd">
+            <button type="button" class="dd-btn" id="ddBtn"><span class="t" id="ddLabel"></span><span class="bdg" id="ddBadge">—</span><span class="arrow">&#9662;</span></button>
+            <div class="dd-list" id="ddList" hidden></div>
+          </div>
+          <div class="langsw" id="langSw">
+            <button type="button" data-l="az">AZ</button>
+            <button type="button" data-l="en">EN</button>
+            <button type="button" data-l="ru">RU</button>
+          </div>
+          <span class="chip" id="langChip">Python</span>
+        </div>
+      </section>
+      {% endif %}
+
+      <div style="height:16px"></div>
+
+      {% for task in tasks %}
+        <div class="desc" data-id="{{ task.id }}" hidden>
+          <section class="card desc-card">
+            <h3 class="dh"><span>Tapşırığın təfərrüatları</span><small>TAPŞIRIQ {{ forloop.counter }} / {{ tasks|length }} &middot; {{ task.points }} bal</small></h3>
+            <div class="desc-scroll">
+              <div class="task-desc" data-l="az">{{ task.description|format_task }}</div>
+              <div class="task-desc" data-l="en" hidden>{{ task.d_en|format_task }}</div>
+              <div class="task-desc" data-l="ru" hidden>{{ task.d_ru|format_task }}</div>
+              {% for t in task.visible_tests %}
+                <div class="samples">
+                  <div><span class="lbl">Nümunə giriş</span><div class="box"><pre>{% if t.input_data %}{{ t.input_data|cut:"#HARNESS" }}{% else %}(giriş yoxdur){% endif %}</pre></div></div>
+                  <div><span class="lbl">Gözlənilən çıxış</span><div class="box"><pre>{{ t.expected_output }}</pre></div></div>
+                </div>
+              {% endfor %}
+            </div>
+          </section>
+        </div>
+        <textarea name="code_{{ task.id }}" id="code{{ task.id }}" hidden>{{ task.initial_code }}</textarea>
+      {% empty %}
+        <section class="card desc-card"><h2>Bu imtahana tapşırıq əlavə edilməyib.</h2></section>
+      {% endfor %}
+
+      {% if tasks %}
+        <section class="card toolbar">
+          <span class="lbl" style="margin:0">Dil: <b style="color:#fff" id="langName">Python</b></span>
+          <div class="btns">
+            <button type="button" class="btn reset" id="resetBtn">Kodu sıfırla</button>
+            <button type="button" class="btn run" id="runBtn">&#9654; Nümunəni yoxla</button>
+            <button type="button" class="btn submit" id="submitBtn">Tapşırığı təhvil ver</button>
+          </div>
+        </section>
+
+        <div class="editor-wrap">
+          <div id="gutter">1</div>
+          <div class="code-area" id="codeArea">
+            <div class="code-inner">
+              <pre id="hl"></pre>
+              <textarea id="editor" wrap="off" spellcheck="false" autocomplete="off" autocapitalize="off"></textarea>
+            </div>
+          </div>
+        </div>
+
+        <div id="results"><div class="info">Nəticə burada görünəcək.</div></div>
+      {% endif %}
+    </main>
+  </div>
+</form>
+
+<script>
+  const form = document.getElementById('examForm');
+  const select = document.getElementById('taskSelect');
+  const editor = document.getElementById('editor');
+  const gutter = document.getElementById('gutter');
+  const hl = document.getElementById('hl');
+  const results = document.getElementById('results');
+  const runBtn = document.getElementById('runBtn');
+  const submitBtn = document.getElementById('submitBtn');
+  const notesEl = document.getElementById('notes');
+  const csrf = form.querySelector('[name=csrfmiddlewaretoken]').value;
+
+  let current = null;
+
+  /* ---------- Bildirişlər ---------- */
+  function notify(text, kind) {
+    const li = document.createElement('li');
+    if (kind) li.className = kind;
+    const now = new Date();
+    const time = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
+    li.textContent = text;
+    const sm = document.createElement('small');
+    sm.textContent = time;
+    li.appendChild(sm);
+    notesEl.insertBefore(li, notesEl.firstChild);
+  }
+
+  /* ---------- Bal və status ---------- */
+  const scores = {};
+  document.querySelectorAll('.st-item').forEach(function (li) {
+    if (li.dataset.score !== '') scores[li.dataset.id] = parseFloat(li.dataset.score);
+  });
+
+  function fmt(n) { return String(Math.round(n * 100) / 100); }
+
+  /* ---------- Tapşırıq siyahısı (açılan menyu) ---------- */
+  function badgeFor(id) {
+    const li = document.getElementById('st' + id);
+    const max = li ? parseFloat(li.dataset.points) : 0;
+    if (!(id in scores)) return { text: '—', cls: '' };
+    const sc = scores[id];
+    const cls = sc >= max - 1e-9 ? 'full' : (sc > 0 ? 'part' : 'zero');
+    return { text: (cls === 'full' ? '\u2713 ' : '') + fmt(sc) + ' / ' + fmt(max), cls: cls };
+  }
+  function refreshDD() {
+    const sel = document.getElementById('taskSelect');
+    const list = document.getElementById('ddList');
+    if (!sel || !list) return;
+    list.innerHTML = '';
+    Array.prototype.forEach.call(sel.options, function (o, i) {
+      const b = badgeFor(o.value);
+      const it = document.createElement('div');
+      it.className = 'dd-item' + (o.value === sel.value ? ' cur' : '');
+      it.dataset.id = o.value;
+      it.innerHTML = '<span class="n">' + (i + 1) + '.</span><span class="t"></span>' +
+        '<span class="p">' + fmt(parseFloat(o.dataset.pts)) + ' bal</span><span class="bdg ' + b.cls + '">' + b.text + '</span>';
+      it.querySelector('.t').textContent = optTitle(o);
+      list.appendChild(it);
+    });
+    const o = sel.options[sel.selectedIndex];
+    if (o) {
+      const b = badgeFor(o.value);
+      document.getElementById('ddLabel').textContent = (sel.selectedIndex + 1) + '. ' + optTitle(o);
+      const bd = document.getElementById('ddBadge');
+      bd.textContent = b.text;
+      bd.className = 'bdg ' + b.cls;
+    }
+  }
+  function toggleDD(open) {
+    const list = document.getElementById('ddList'), dd = document.getElementById('dd');
+    if (!list) return;
+    const show = open === undefined ? list.hidden : open;
+    list.hidden = !show;
+    dd.classList.toggle('open', show);
+    if (show) {
+      const cur = list.querySelector('.cur');
+      if (cur) list.scrollTop = cur.offsetTop - list.clientHeight / 2;
+    }
+  }
+
+  function updateStatus(id) {
+    const li = document.getElementById('st' + id);
+    if (!li) return;
+    const badge = li.querySelector('.badge');
+    if (id in scores) {
+      badge.textContent = '✓ ' + fmt(scores[id]) + ' / ' + fmt(parseFloat(li.dataset.points));
+      li.classList.add('done');
+    }
+    let sum = 0;
+    Object.keys(scores).forEach(function (k) { sum += scores[k]; });
+    document.getElementById('totalScore').textContent = fmt(sum);
+    let solved = 0;
+    document.querySelectorAll('.st-item').forEach(function (it) {
+      const sc = scores[it.dataset.id];
+      if (sc !== undefined && sc >= parseFloat(it.dataset.points) - 1e-9) solved++;
+    });
+    document.getElementById('solvedCount').textContent =
+      solved + ' / ' + document.querySelectorAll('.st-item').length;
+    refreshDD();
+  }
+  Object.keys(scores).forEach(updateStatus);
+  (function () {
+    let mx = 0;
+    document.querySelectorAll('.st-item').forEach(function (li) { mx += parseFloat(li.dataset.points) || 0; });
+    document.getElementById('maxScore').textContent = fmt(mx);
+    document.getElementById('maxScore2').textContent = fmt(mx);
+  })();
+  const initialCode = {};
+  document.querySelectorAll('textarea[id^="code"]').forEach(function (t) {
+    initialCode[t.id.replace('code', '')] = t.value;
+  });
+
+  /* ---------- Rəngləmə (Python) ---------- */
+  const KW = new Set(['and','as','assert','break','class','continue','def','del','elif','else','except','finally',
+    'for','from','global','if','import','in','is','lambda','nonlocal','not','or','pass','raise','return','try',
+    'while','with','yield','None','True','False']);
+  const BI = new Set(['print','input','int','float','str','list','dict','set','tuple','len','range','sum','min','max',
+    'abs','sorted','enumerate','zip','map','filter','open','type','bool','round','reversed','any','all','pow','divmod']);
+  const RX = new RegExp(
+    '("""[\\s\\S]*?(?:"""|$)|\'\'\'[\\s\\S]*?(?:\'\'\'|$))' +
+    '|((?:[rRbBuUfF]{1,2})?"(?:\\\\.|[^"\\\\\\n])*(?:"|$)|(?:[rRbBuUfF]{1,2})?\'(?:\\\\.|[^\'\\\\\\n])*(?:\'|$))' +
+    '|(#[^\\n]*)' +
+    '|(\\b\\d+(?:\\.\\d+)?\\b)' +
+    '|([A-Za-z_\\u00C0-\\uFFFF][\\w\\u00C0-\\uFFFF]*)', 'g');
+
+  function esc(s) { return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+
+  const JKW = new Set(['abstract','assert','boolean','break','byte','case','catch','char','class','const','continue','default','do',
+    'double','else','enum','extends','final','finally','float','for','goto','if','implements','import','instanceof','int','interface',
+    'long','native','new','package','private','protected','public','return','short','static','strictfp','super','switch','synchronized',
+    'this','throw','throws','transient','try','void','volatile','while','var','true','false','null']);
+  const RXJ = new RegExp(
+    '(\\/\\*[\\s\\S]*?(?:\\*\\/|$))' +
+    '|(\\/\\/[^\\n]*)' +
+    '|("(?:\\\\.|[^"\\\\\\n])*(?:"|$)|\'(?:\\\\.|[^\'\\\\\\n])*(?:\'|$))' +
+    '|(\\b\\d+(?:\\.\\d+)?[LlFfDd]?\\b)' +
+    '|(@?[A-Za-z_$][\\w$]*)', 'g');
+
+  function highlightJava(src) {
+    let out = '', last = 0, m;
+    RXJ.lastIndex = 0;
+    while ((m = RXJ.exec(src)) !== null) {
+      out += esc(src.slice(last, m.index));
+      const t = m[0];
+      let cls = '';
+      if (m[1] || m[2]) cls = 'c';
+      else if (m[3]) cls = 's';
+      else if (m[4]) cls = 'n';
+      else if (JKW.has(t)) cls = 'k';
+      else if (t[0] === '@') cls = 'f';
+      else if (src[RXJ.lastIndex] === '(') cls = 'f';
+      else if (/^[A-Z]/.test(t)) cls = 'b';
+      out += cls ? '<span class="t-' + cls + '">' + esc(t) + '</span>' : esc(t);
+      last = RXJ.lastIndex;
+      if (t.length === 0) RXJ.lastIndex++;
+    }
+    return out + esc(src.slice(last)) + '\n';
+  }
+
+  let taskLang = 'python';
+
+  function highlight(src) {
+    if (taskLang === 'java') return highlightJava(src);
+    return highlightPy(src);
+  }
+
+  function highlightPy(src) {
+    let out = '', last = 0, prev = '', m;
+    RX.lastIndex = 0;
+    while ((m = RX.exec(src)) !== null) {
+      out += esc(src.slice(last, m.index));
+      const t = m[0];
+      let cls = '';
+      if (m[1] || m[2]) cls = 's';
+      else if (m[3]) cls = 'c';
+      else if (m[4]) cls = 'n';
+      else {
+        if (KW.has(t)) cls = 'k';
+        else if (prev === 'def' || prev === 'class') cls = 'f';
+        else if (BI.has(t)) cls = 'b';
+        prev = t;
+      }
+      out += cls ? '<span class="t-' + cls + '">' + esc(t) + '</span>' : esc(t);
+      last = RX.lastIndex;
+      if (t.length === 0) RX.lastIndex++;
+    }
+    return out + esc(src.slice(last)) + '\n';
+  }
+
+  function updateHL() {
+    hl.innerHTML = highlight(editor.value);
+  }
+
+  /* ---------- Dil seçimi (AZ / EN / RU) ---------- */
+  let uiLang = 'az';
+  try { uiLang = localStorage.getItem('examLang') || 'az'; } catch (e) {}
+  if (['az', 'en', 'ru'].indexOf(uiLang) < 0) uiLang = 'az';
+
+  function optTitle(o) {
+    if (uiLang === 'en') return o.dataset.titleEn || o.dataset.title;
+    if (uiLang === 'ru') return o.dataset.titleRu || o.dataset.title;
+    return o.dataset.title;
+  }
+  function applyLang() {
+    document.querySelectorAll('#langSw button').forEach(function (b) {
+      b.classList.toggle('on', b.dataset.l === uiLang);
+    });
+    document.querySelectorAll('.task-desc').forEach(function (d) {
+      // seçilən dilin mətni boşdursa (yalnız azərbaycanca var) az göstərilir
+      d.hidden = d.dataset.l !== uiLang;
+    });
+    document.querySelectorAll('.desc').forEach(function (box) {
+      const cur = box.querySelector('.task-desc[data-l="' + uiLang + '"]');
+      if (!cur || !cur.textContent.trim()) {
+        box.querySelectorAll('.task-desc').forEach(function (d) { d.hidden = d.dataset.l !== 'az'; });
+      }
+    });
+    refreshDD();
+  }
+  function setTaskLang(l) {
+    taskLang = l === 'java' ? 'java' : 'python';
+    const name = taskLang === 'java' ? 'Java' : 'Python';
+    const a = document.getElementById('langChip'), b = document.getElementById('langName');
+    if (a) a.textContent = name;
+    if (b) b.textContent = name;
+  }
+
+  /* Kursor həmişə görünsün (səhifə və üfqi sürüşdürmə) */
+  const codeArea = document.getElementById('codeArea');
+  let charW = 0;
+  function measureChar() {
+    const sp = document.createElement('span');
+    sp.style.cssText = 'position:absolute;visibility:hidden;white-space:pre;font:15px Consolas,"Courier New",monospace';
+    sp.textContent = 'MMMMMMMMMM';
+    document.body.appendChild(sp);
+    charW = sp.getBoundingClientRect().width / 10;
+    document.body.removeChild(sp);
+  }
+  function ensureCaretVisible() {
+    if (!charW) measureChar();
+    const lh = parseFloat(getComputedStyle(editor).lineHeight) || 23;
+    const upto = editor.value.slice(0, editor.selectionStart).split('\n');
+    const line = upto.length, col = upto[upto.length - 1].length;
+    // üfqi
+    const x = 14 + col * charW;
+    if (x < codeArea.scrollLeft + 20) codeArea.scrollLeft = Math.max(0, x - 40);
+    else if (x > codeArea.scrollLeft + codeArea.clientWidth - 30) codeArea.scrollLeft = x - codeArea.clientWidth + 60;
+    // şaquli (yapışqan şərt qutusunun altı ilə pəncərənin altı arası)
+    const top = editor.getBoundingClientRect().top + 16 + (line - 1) * lh;
+    const minY = 8;
+    const maxY = window.innerHeight - lh * 2;
+    if (top < minY) window.scrollBy(0, top - minY - lh);
+    else if (top > maxY) window.scrollBy(0, top - maxY + lh);
+  }
+
+  function updateGutter() {
+    const lines = editor.value.split('\n').length;
+    let nums = '';
+    for (let i = 1; i <= lines; i++) nums += i + (i < lines ? '\n' : '');
+    gutter.textContent = nums;
+  }
+
+  function saveCurrent() {
+    if (current && editor) document.getElementById('code' + current).value = editor.value;
+  }
+
+  function refresh() { saveCurrent(); updateGutter(); updateHL(); ensureCaretVisible(); }
+
+  /* ---------- Tapşırıq seçimi ---------- */
+  function info(text) {
+    results.innerHTML = '';
+    const d = document.createElement('div');
+    d.className = 'info';
+    d.textContent = text;
+    results.appendChild(d);
+  }
+
+  function showTask(id) {
+    saveCurrent();
+    current = id;
+    document.querySelectorAll('.desc').forEach(function (d) { d.hidden = d.dataset.id !== id; });
+    document.querySelectorAll('.st-item').forEach(function (li) {
+      li.classList.toggle('cur', li.dataset.id === id);
+    });
+    if (select) select.value = id;
+    const opt = select && select.options[select.selectedIndex];
+    setTaskLang(opt ? opt.dataset.lang : 'python');
+    refreshDD();
+    toggleDD(false);
+    editor.value = document.getElementById('code' + id).value;
+    updateGutter();
+    updateHL();
+    codeArea.scrollLeft = 0;
+    applyLang();
+    if (select) window.scrollTo({ top: 0 });
+    info('Nəticə burada görünəcək.');
+  }
+
+  /* ---------- Redaktor: mətn əməliyyatları ---------- */
+  function setCaret(pos) { editor.selectionStart = editor.selectionEnd = pos; }
+
+  function replaceRange(start, end, text, caret) {
+    editor.value = editor.value.slice(0, start) + text + editor.value.slice(end);
+    setCaret(caret === undefined ? start + text.length : caret);
+    refresh();
+  }
+
+  const PAIRS = { '(': ')', '[': ']', '{': '}', '"': '"', "'": "'" };
+  const CLOSERS = new Set([')', ']', '}', '"', "'"]);
+
+  function onKeydown(ev) {
+    if (ev.ctrlKey || ev.metaKey || ev.altKey) return;
+
+    const v = editor.value;
+    const s = editor.selectionStart, e = editor.selectionEnd;
+    const hasSel = s !== e;
+    const prevCh = s > 0 ? v[s - 1] : '';
+    const nextCh = v[e] || '';
+    const lineStart = s === 0 ? 0 : v.lastIndexOf('\n', s - 1) + 1;
+    const before = v.slice(lineStart, s);
+    const key = ev.key;
+
+    if (key in PAIRS) {
+      if (hasSel) {
+        ev.preventDefault();
+        const inner = v.slice(s, e);
+        editor.value = v.slice(0, s) + key + inner + PAIRS[key] + v.slice(e);
+        editor.selectionStart = s + 1;
+        editor.selectionEnd = s + 1 + inner.length;
+        refresh();
+        return;
+      }
+      const isQuote = key === '"' || key === "'";
+      if (isQuote && nextCh === key) {
+        ev.preventDefault();
+        setCaret(s + 1);
+        return;
+      }
+      if (isQuote && /\w/.test(prevCh)) return;
+      if (nextCh === '' || /[\s)\]}.,:;]/.test(nextCh)) {
+        ev.preventDefault();
+        replaceRange(s, e, key + PAIRS[key], s + 1);
+        return;
+      }
+      return;
+    }
+
+    if (CLOSERS.has(key) && !hasSel && nextCh === key) {
+      ev.preventDefault();
+      setCaret(s + 1);
+      return;
+    }
+
+    if (key === 'Tab') {
+      ev.preventDefault();
+      replaceRange(s, e, '    ');
+      return;
+    }
+
+    if (key === 'Enter') {
+      ev.preventDefault();
+      let indent = before.match(/^ */)[0];
+      const tr = before.trimEnd();
+      if (taskLang === 'java') {
+        if (tr.endsWith('{')) {
+          if (nextCh === '}') {
+            replaceRange(s, e, '\n' + indent + '    \n' + indent, s + 1 + indent.length + 4);
+            return;
+          }
+          indent += '    ';
+        }
+      } else if (tr.endsWith(':')) {
+        indent += '    ';
+      }
+      replaceRange(s, e, '\n' + indent);
+      return;
+    }
+
+    if (key === '}' && taskLang === 'java' && !hasSel && nextCh !== '}' && before.length >= 4 && /^ +$/.test(before)) {
+      ev.preventDefault();
+      replaceRange(s - 4, e, '}');
+      return;
+    }
+
+    if (key === 'Backspace' && !hasSel) {
+      if (prevCh in PAIRS && PAIRS[prevCh] === nextCh) {
+        ev.preventDefault();
+        replaceRange(s - 1, s + 1, '', s - 1);
+        return;
+      }
+      if (before.length >= 4 && /^ +$/.test(before) && before.length % 4 === 0) {
+        ev.preventDefault();
+        replaceRange(s - 4, s, '', s - 4);
+      }
+    }
+  }
+
+  /* ---------- Nəticə kartları ---------- */
+  function field(label, text, cls) {
+    const w = document.createElement('div');
+    const l = document.createElement('span');
+    l.className = 'lbl';
+    l.textContent = label;
+    const p = document.createElement('pre');
+    if (cls) p.className = cls;
+    p.textContent = text;
+    w.appendChild(l);
+    w.appendChild(p);
+    return w;
+  }
+
+    function renderResults(list, passed, total) {
+    results.innerHTML = '';
+
+    const sum = document.createElement('div');
+    sum.className = 'res ' + (passed === total ? 'ok' : 'bad');
+    const sh = document.createElement('h4');
+    sh.textContent = 'Keçən testlər: ' + passed + ' / ' + total + (passed === total ? ' ✓' : '');
+    sum.appendChild(sh);
+    results.appendChild(sum);
+
+    list.forEach(function (r, i) {
+      const box = document.createElement('div');
+      box.className = 'res ' + (r.ok ? 'ok' : 'bad');
+      const h = document.createElement('h4');
+      h.textContent = 'Nümunə ' + (i + 1) + (r.ok ? ': düzgündür ✓' : ': səhvdir ✗');
+      box.appendChild(h);
+      const cols = document.createElement('div');
+      cols.className = 'cols';
+      cols.appendChild(field('Giriş', r.input || '(giriş yoxdur)'));
+      cols.appendChild(field('Gözlənilən', r.expected));
+      cols.appendChild(r.error
+        ? field('Xəta', r.error, 'err')
+        : field('Sənin çıxışın', r.output || '(çıxış yoxdur)'));
+      box.appendChild(cols);
+      results.appendChild(box);
+    });
+  }
+
+  async function post(url, body) {
+    const resp = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrf },
+      body: JSON.stringify(body)
+    });
+    return resp.json();
+  }
+
+  /* ---------- Qoşulma ---------- */
+  if (select && editor) {
+    select.addEventListener('change', function () { showTask(select.value); });
+    document.getElementById('ddBtn').addEventListener('click', function () { toggleDD(); });
+    document.querySelectorAll('#langSw button').forEach(function (b) {
+      b.addEventListener('click', function () {
+        uiLang = b.dataset.l;
+        try { localStorage.setItem('examLang', uiLang); } catch (e) {}
+        applyLang();
+      });
+    });
+    document.getElementById('ddList').addEventListener('click', function (ev) {
+      const it = ev.target.closest('.dd-item');
+      if (it) showTask(it.dataset.id);
+    });
+    document.addEventListener('click', function (ev) {
+      if (!ev.target.closest('#dd')) toggleDD(false);
+    });
+    document.addEventListener('keydown', function (ev) { if (ev.key === 'Escape') toggleDD(false); });
+    document.querySelectorAll('.st-item').forEach(function (li) {
+      li.addEventListener('click', function () { showTask(li.dataset.id); });
+    });
+
+    editor.addEventListener('input', refresh);
+    editor.addEventListener('keyup', ensureCaretVisible);
+    editor.addEventListener('click', ensureCaretVisible);
+    editor.addEventListener('keydown', onKeydown);
+
+    document.getElementById('resetBtn').addEventListener('click', function () {
+      if (!current) return;
+      if (!confirm('Bu tapşırığın kodu ilkin vəziyyətinə qayıdacaq. Əminsən?')) return;
+      editor.value = initialCode[current] || '';
+      refresh();
+    });
+
+    runBtn.addEventListener('click', async function () {
+      runBtn.disabled = true;
+      info('İşləyir...');
+      try {
+        const data = await post("{% url 'run_code' exam.id %}", { code: editor.value, task_id: current });
+        if (data.error) info(data.error); else renderResults(data.results, data.passed, data.total);
+      } catch (e) {
+        info('Serverlə əlaqə alınmadı.');
+      }
+      runBtn.disabled = false;
+    });
+
+    submitBtn.addEventListener('click', async function () {
+      saveCurrent();
+      const id = current;
+      const num = select.selectedIndex + 1;
+      submitBtn.disabled = true;
+      info('Bütün testlər yoxlanır...');
+      try {
+        const data = await post("{% url 'submit_task' exam.id %}", { code: editor.value, task_id: id });
+        if (data.error) {
+          info(data.error);
+          notify(data.error, 'bad');
+        } else {
+          scores[String(data.task_id)] = data.score;
+          updateStatus(String(data.task_id));
+          const good = data.passed === data.total;
+          notify('Tapşırıq ' + num + ' təhvil verildi: ' + data.passed + '/' + data.total +
+                 ' test keçdi, ' + fmt(data.score) + ' / ' + fmt(data.max) + ' bal', good ? 'ok' : 'warn');
+          const next = select.options[select.selectedIndex + 1];
+          if (next) {
+            showTask(next.value);
+          } else {
+            info('Tapşırıq təhvil verildi. Bütün tapşırıqlara baxıb "İmtahanı bitir" düyməsinə bas.');
+            notify('Sonuncu tapşırıqdır. İmtahanı bitirə bilərsən.');
+          }
+        }
+      } catch (e) {
+        info('Serverlə əlaqə alınmadı.');
+        notify('Serverlə əlaqə alınmadı.', 'bad');
+      }
+      submitBtn.disabled = false;
+    });
+
+    showTask(select.value);
+    applyLang();
+    notify('İmtahan başladı. Uğurlar!');
+  }
+
+  /* ---------- Taymer ---------- */
+  let left = Number("{{ remaining_seconds }}");
+  const timerEl = document.getElementById('timer');
+  const timerBox = document.getElementById('timerBox');
+  let warned5 = false;
+
+  function render() {
+    const m = String(Math.floor(left / 60)).padStart(2, '0');
+    const s = String(left % 60).padStart(2, '0');
+    timerEl.textContent = m + ':' + s;
+    if (left <= 60) timerBox.classList.add('low');
+    if (left <= 300 && !warned5 && left > 60) { warned5 = true; notify('Son 5 dəqiqə qalıb.', 'warn'); }
+  }
+  render();
+
+  const t = setInterval(function () {
+    left--;
+    render();
+    if (left <= 0) {
+      clearInterval(t);
+      saveCurrent();
+      form.submit();
+    }
+  }, 1000);
+
+  form.addEventListener('submit', function (e) {
+    saveCurrent();
+    if (left > 0 && !confirm('İmtahanı bitirmək istəyirsən? Təhvil verilməyən tapşırıqlar cari kodla yoxlanacaq.')) {
+      e.preventDefault();
+    }
+  });
+</script>
+{% include "_proctor.html" %}
+</body>
+</html>

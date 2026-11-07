@@ -1,0 +1,71 @@
+/* Xam rəng palitrası. Komponentlər semantik tokenlərdən istifadə etməlidir. */
+:root {
+  --mx-violet-50: #F5F3FF;
+  --mx-violet-100: #EDE9FE;
+  --mx-violet-200: #DDD6FE;
+  --mx-violet-300: #C4B5FD;
+  --mx-violet-400: #A78BFA;
+  --mx-violet-500: #8B5CF6;
+  --mx-violet-600: #7C3AED;
+  --mx-violet-700: #6D28D9;
+  --mx-violet-800: #5B21B6;
+  --mx-violet-900: #4C1D95;
+  --mx-violet-950: #2E1065;
+
+  --mx-indigo-50: #EEF2FF;
+  --mx-indigo-100: #E0E7FF;
+  --mx-indigo-200: #C7D2FE;
+  --mx-indigo-300: #A5B4FC;
+  --mx-indigo-400: #818CF8;
+  --mx-indigo-500: #6366F1;
+  --mx-indigo-600: #4F46E5;
+  --mx-indigo-700: #4338CA;
+  --mx-indigo-800: #3730A3;
+  --mx-indigo-900: #312E81;
+  --mx-indigo-950: #1E1B4B;
+
+  --mx-neutral-0: #FFFFFF;
+  --mx-neutral-50: #F8FAFC;
+  --mx-neutral-100: #F1F5F9;
+  --mx-neutral-200: #E2E8F0;
+  --mx-neutral-300: #CBD5E1;
+  --mx-neutral-400: #94A3B8;
+  --mx-neutral-500: #64748B;
+  --mx-neutral-600: #475569;
+  --mx-neutral-700: #334155;
+  --mx-neutral-800: #1E293B;
+  --mx-neutral-900: #0F172A;
+  --mx-neutral-950: #0B1120;
+
+  --mx-red-50: #FEF2F2;
+  --mx-red-100: #FEE2E2;
+  --mx-red-200: #FECACA;
+  --mx-red-300: #FCA5A5;
+  --mx-red-400: #F87171;
+  --mx-red-500: #EF4444;
+  --mx-red-600: #DC2626;
+  --mx-red-700: #B91C1C;
+  --mx-red-800: #991B1B;
+  --mx-red-900: #7F1D1D;
+  --mx-red-950: #450A0A;
+
+  --mx-ink-950: #0B0A17;
+  --mx-ink-900: #12111F;
+  --mx-ink-800: #1B1A2E;
+  --mx-ink-700: #26243D;
+  --mx-ink-600: #353252;
+  --mx-ink-400: #9C99B5;
+  --mx-ink-50: #F5F4FA;
+
+  --mx-green-400: #4ADE80;
+  --mx-green-600: #16A34A;
+  --mx-green-700: #15803D;
+
+  --mx-amber-400: #FBBF24;
+  --mx-amber-600: #D97706;
+  --mx-amber-700: #B45309;
+
+  --mx-blue-400: #60A5FA;
+  --mx-blue-600: #2563EB;
+  --mx-blue-700: #1D4ED8;
+}

@@ -1,0 +1,64 @@
+/* Semantik rəng rolları: defolt tünd tema. */
+:root,
+[data-theme="dark"] {
+  color-scheme: dark;
+
+  --mx-bg: var(--mx-ink-950);
+  --mx-surface: var(--mx-ink-900);
+  --mx-surface-raised: var(--mx-ink-800);
+  --mx-border: var(--mx-ink-700);
+  --mx-border-strong: var(--mx-ink-600);
+  --mx-text: var(--mx-ink-50);
+  --mx-text-muted: var(--mx-ink-400);
+
+  --mx-primary: var(--mx-violet-600);
+  --mx-primary-hover: var(--mx-violet-500);
+  --mx-primary-fg: #FFFFFF;
+  --mx-primary-text: var(--mx-violet-400);
+  --mx-primary-subtle: var(--mx-violet-950);
+  --mx-ring: var(--mx-violet-400);
+
+  --mx-secondary: var(--mx-indigo-500);
+  --mx-secondary-hover: var(--mx-indigo-600);
+  --mx-secondary-subtle: var(--mx-indigo-950);
+
+  --mx-danger: var(--mx-red-600);
+  --mx-danger-hover: var(--mx-red-500);
+  --mx-danger-text: var(--mx-red-400);
+  --mx-danger-subtle: var(--mx-red-950);
+
+  --mx-success: var(--mx-green-600);
+  --mx-warning: var(--mx-amber-600);
+  --mx-info: var(--mx-blue-600);
+  --mx-success-text: var(--mx-green-400);
+  --mx-warning-text: var(--mx-amber-400);
+  --mx-info-text: var(--mx-blue-400);
+}
+
+/* İşıqlı tema */
+[data-theme="light"] {
+  color-scheme: light;
+
+  --mx-bg: var(--mx-neutral-50);
+  --mx-surface: var(--mx-neutral-0);
+  --mx-surface-raised: var(--mx-neutral-0);
+  --mx-border: var(--mx-neutral-200);
+  --mx-border-strong: var(--mx-neutral-300);
+  --mx-text: var(--mx-neutral-900);
+  --mx-text-muted: var(--mx-neutral-500);
+
+  --mx-primary-hover: var(--mx-violet-700);
+  --mx-primary-text: var(--mx-violet-600);
+  --mx-primary-subtle: var(--mx-violet-50);
+  --mx-ring: var(--mx-violet-500);
+
+  --mx-secondary: var(--mx-indigo-600);
+  --mx-secondary-subtle: var(--mx-indigo-50);
+
+  --mx-danger-hover: var(--mx-red-700);
+  --mx-danger-text: var(--mx-red-600);
+  --mx-danger-subtle: var(--mx-red-50);
+  --mx-success-text: var(--mx-green-700);
+  --mx-warning-text: var(--mx-amber-700);
+  --mx-info-text: var(--mx-blue-700);
+}

@@ -1,0 +1,79 @@
+{% extends "admin_base.html" %}
+{% block title %}Excel ilə tələbə yüklə{% endblock %}
+
+{% block content %}
+<div class="top"><h1>Excel ilə tələbə yüklə</h1></div>
+
+{% if not preview %}
+<div class="panel" style="max-width:640px">
+  <p style="margin-top:0">Excel faylında bu sütunlar olmalıdır:</p>
+  <table style="border-collapse:collapse;margin-bottom:16px">
+    <tr>
+      {% for h in "Ad,Soyad,İstifadəçi adı,Şifrə,Qrup"|make_list %}{% endfor %}
+      <th style="border:1px solid var(--line);padding:6px 10px">Ad</th>
+      <th style="border:1px solid var(--line);padding:6px 10px">Soyad</th>
+      <th style="border:1px solid var(--line);padding:6px 10px">İstifadəçi adı</th>
+      <th style="border:1px solid var(--line);padding:6px 10px">Şifrə</th>
+      <th style="border:1px solid var(--line);padding:6px 10px">Qrup</th>
+    </tr>
+  </table>
+  <p style="color:var(--muted);font-size:14px">
+    Qruplar əvvəlcədən "Qruplar" səhifəsində yaradılmalıdır. Şifrə ən azı 6 simvol olmalıdır.
+  </p>
+
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <div style="margin-bottom:14px">
+      <input type="file" name="excel_file" accept=".xlsx" required>
+    </div>
+    <button class="btn" type="submit">Yüklə və yoxla</button>
+    <a class="btn ghost" href="{% url 'admin_dashboard' %}">Ləğv et</a>
+  </form>
+</div>
+
+{% else %}
+<div class="panel">
+  <p style="margin-top:0">
+    <strong style="color:var(--green)">{{ ok_count }} düzgün sətir</strong>
+    {% if error_count %} · <strong style="color:var(--red)">{{ error_count }} xətalı sətir</strong> (təsdiqləyəndə keçiləcək){% endif %}
+  </p>
+
+  <div style="overflow-x:auto">
+  <table style="width:100%;border-collapse:collapse">
+    <tr style="text-align:left;color:var(--muted);font-size:13px">
+      <th style="padding:8px">Sətir</th>
+      <th style="padding:8px">Ad Soyad</th>
+      <th style="padding:8px">İstifadəçi adı</th>
+      <th style="padding:8px">Qrup</th>
+      <th style="padding:8px">Nəticə</th>
+    </tr>
+    {% for r in rows %}
+    <tr style="border-top:1px solid var(--line)">
+      <td style="padding:8px">{{ r.row }}</td>
+      <td style="padding:8px">{{ r.first_name }} {{ r.last_name }}</td>
+      <td style="padding:8px">{{ r.username }}</td>
+      <td style="padding:8px">{{ r.group }}</td>
+      <td style="padding:8px">
+        {% if r.errors %}
+          <span style="color:var(--red)">{{ r.errors|join:"; " }}</span>
+        {% elif r.action == 'add' %}
+          <span style="color:var(--amber-d)">Mövcud tələbə, qrupa əlavə olunacaq</span>
+        {% else %}
+          <span style="color:var(--green)">Yeni hesab yaradılacaq</span>
+        {% endif %}
+      </td>
+    </tr>
+    {% endfor %}
+  </table>
+  </div>
+
+  <form method="post" action="{% url 'student_import_confirm' %}" style="margin-top:18px">
+    {% csrf_token %}
+    {% if ok_count %}
+      <button class="btn" type="submit">Təsdiq et ({{ ok_count }} tələbə)</button>
+    {% endif %}
+    <a class="btn ghost" href="{% url 'student_import' %}">Başqa fayl yüklə</a>
+  </form>
+</div>
+{% endif %}
+{% endblock %}

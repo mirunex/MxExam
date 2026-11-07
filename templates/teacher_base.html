@@ -1,0 +1,100 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="az">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Müəllim Paneli{% endblock %} — ExamGuard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #311042 100%);
+            background-attachment: fixed;
+            min-height: 100vh;
+            color: #f8fafc;
+        }
+        .sidebar {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(16px);
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            min-height: 100vh;
+        }
+        .sidebar .nav-link {
+            color: rgba(255, 255, 255, 0.7);
+            border-radius: 10px;
+            padding: 10px 14px;
+            margin-bottom: 4px;
+        }
+        .sidebar .nav-link:hover { background: rgba(255, 255, 255, 0.08); color: #fff; }
+        .sidebar .nav-link.active {
+            background: linear-gradient(135deg, rgba(236, 72, 153, 0.35), rgba(139, 92, 246, 0.35));
+            color: #fff;
+            font-weight: 600;
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.07);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.37);
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 16px;
+        }
+        .btn-glass-gradient {
+            background: linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #fff;
+            font-weight: 600;
+            border-radius: 12px;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+        .btn-glass-gradient:hover { color: #fff; transform: translateY(-2px); }
+    </style>
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+<div class="container-fluid">
+    <div class="row">
+        <aside class="col-12 col-md-3 col-lg-2 sidebar p-3 d-flex flex-column">
+            <div class="fw-bold fs-5 mb-1">ExamGuard</div>
+            <div class="text-white-50 small mb-4">{{ request.user.username }} · Müəllim</div>
+
+            {% with current=request.resolver_match.url_name %}
+            <nav class="nav flex-column">
+                <a class="nav-link {% if current == 'teacher_dashboard' %}active{% endif %}"
+                   href="{% url 'teacher_dashboard' %}">📋 İmtahanlar</a>
+                <a class="nav-link {% if current == 'create_exam' %}active{% endif %}"
+                   href="{% url 'create_exam' %}">➕ Yeni imtahan</a>
+                <a class="nav-link {% if current == 'teacher_groups' %}active{% endif %}"
+                   href="{% url 'teacher_groups' %}">👥 Qruplar</a>
+                <a href="{% url 'teacher_live' %}">Canlı izləmə</a>
+
+            </nav>
+            {% endwith %}
+
+            <form action="{% url 'logout' %}" method="post" class="mt-auto pt-4">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-sm btn-outline-light rounded-pill w-100">Çıxış et</button>
+            </form>
+        </aside>
+
+        <main class="col-12 col-md-9 col-lg-10 p-4">
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} bg-opacity-25 border text-white">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

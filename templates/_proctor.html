@@ -1,0 +1,67 @@
+<style>
+  #pg-toast{position:fixed;left:50%;top:24px;transform:translateX(-50%);z-index:9999;max-width:520px;
+            padding:14px 22px;border-radius:14px;font-weight:600;display:none;box-shadow:0 12px 40px rgba(0,0,0,.4)}
+  #pg-toast.warn{background:#7c2d12;color:#ffedd5;border:1px solid #fb923c}
+  #pg-toast.bad{background:#7f1d1d;color:#fee2e2;border:1px solid #f87171}
+</style>
+<div id="pg-toast"></div>
+<script>
+(function () {
+  const form = document.getElementById('examForm');
+  if (!form) return;
+  const csrf = form.querySelector('[name=csrfmiddlewaretoken]').value;
+  const url = "{% url 'exam_violation' exam.id %}";
+  const toast = document.getElementById('pg-toast');
+  const warnEl = document.getElementById('warnCount');
+  const startedAt = Date.now();
+  let removed = false, last = 0, hideTimer = null;
+
+  function show(text, kind, ms) {
+    toast.textContent = text;
+    toast.className = kind;
+    toast.style.display = 'block';
+    clearTimeout(hideTimer);
+    if (ms) hideTimer = setTimeout(function () { toast.style.display = 'none'; }, ms);
+  }
+
+  async function report(kind, text) {
+    if (removed) return;
+    const now = Date.now();
+    if (now - startedAt < 2500 || now - last < 1000) return;
+    last = now;
+
+    let data;
+    try {
+      const resp = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrf },
+        body: JSON.stringify({ kind: kind })
+      });
+      data = await resp.json();
+    } catch (e) { return; }
+    if (data.ignored || data.count === undefined) return;
+
+    if (warnEl) warnEl.textContent = data.count + ' / ' + data.max;
+    if (typeof notify === 'function') notify(text + ' (' + data.count + '/' + data.max + ')', 'warn');
+
+    if (data.removed) {
+      removed = true;
+      show('Xəbərdarlıq limiti aşıldı. İmtahan sonlandırılır...', 'bad', 0);
+      setTimeout(function () { form.submit(); }, 2500);
+    } else {
+      show('Xəbərdarlıq ' + data.count + '/' + data.max + ': ' + text, 'warn', 5000);
+    }
+  }
+
+  document.addEventListener('visibilitychange', function () {
+    if (document.hidden) report('tab_hidden', 'Başqa tabə keçdin');
+  });
+  window.addEventListener('blur', function () {
+    report('window_blur', 'İmtahan pəncərəsindən çıxdın');
+  });
+  document.addEventListener('paste', function () {
+    report('paste', 'Yapışdırma (paste) aşkarlandı');
+  });
+  
+})();
+</script>

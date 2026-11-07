@@ -1,0 +1,112 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="az">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Giriş — ExamGuard</title>
+    <link rel="icon" type="image/x-icon" href="{% static 'favicon.ico' %}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #311042 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #f8fafc;
+            background-attachment: fixed;
+            padding: 20px;
+        }
+
+        /* Glassmorphic Login Kartı */
+        .login-card {
+            background: rgba(255, 255, 255, 0.07);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 24px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            width: 100%;
+            max-width: 420px;
+            overflow: hidden;
+        }
+
+        .login-header {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.3), rgba(168, 85, 247, 0.3));
+            border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+            color: white;
+            padding: 2rem 1.5rem 1.5rem;
+            text-align: center;
+        }
+
+        /* Input Sahələri */
+        .form-control {
+            background: rgba(255, 255, 255, 0.08) !important;
+            border: 1px solid rgba(255, 255, 255, 0.2) !important;
+            color: #ffffff !important;
+            border-radius: 12px;
+            backdrop-filter: blur(5px);
+            padding: 0.75rem 1rem;
+        }
+
+        .form-control:focus {
+            background: rgba(255, 255, 255, 0.15) !important;
+            border-color: rgba(168, 85, 247, 0.6) !important;
+            box-shadow: 0 0 15px rgba(168, 85, 247, 0.3) !important;
+            color: #ffffff !important;
+        }
+
+        .form-control::placeholder {
+            color: rgba(255, 255, 255, 0.4) !important;
+        }
+
+        /* Düymə Stili */
+        .btn-glass-gradient {
+            background: linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            font-weight: 600;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(236, 72, 153, 0.3);
+        }
+
+        .btn-glass-gradient:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(236, 72, 153, 0.5);
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-card">
+        <div class="login-header">
+            <h3 class="fw-bold mb-1 text-white" style="letter-spacing: 0.5px;">
+                {{ login_title }}
+            </h3>
+            <span class="text-white-50 small">{{ login_subtitle }}</span>
+        </div>
+        <div class="p-4">
+        {% if error %}
+            <div class="alert alert-danger bg-danger bg-opacity-25 border-danger text-white p-3 rounded-3 mb-3 small">
+                {{ error }}
+            </div>
+        {% endif %}
+
+            <form method="post">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label class="form-label fw-semibold text-white-50 small">İstifadəçi adı</label>
+                    <input type="text" name="username" class="form-control" placeholder="İstifadəçi adınızı daxil edin" required autofocus>
+                </div>
+                <div class="mb-4">
+                    <label class="form-label fw-semibold text-white-50 small">Şifrə</label>
+                    <input type="password" name="password" class="form-control" placeholder="••••••••" required>
+                </div>
+                <button type="submit" class="btn btn-glass-gradient w-100 py-2.5">Daxil ol</button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,83 @@
+/* Hərəkət tokenləri: bütün sistem eyni ritmdə hərəkət edir */
+:root {
+  --mx-duration-fast: 100ms;
+  --mx-duration-base: 150ms;
+  --mx-duration-slow: 250ms;
+  --mx-ease: cubic-bezier(0.2, 0, 0, 1);
+}
+
+/* İstifadəçi "hərəkəti azalt" seçibsə, keçidləri söndür */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Modal: yumşaq açılma və bağlanma (brauzerin hazır <dialog> elementi ilə) */
+dialog.mx-dialog {
+  opacity: 0;
+  transform: translateY(8px) scale(0.98);
+  transition:
+    opacity var(--mx-duration-base) var(--mx-ease),
+    transform var(--mx-duration-base) var(--mx-ease),
+    overlay var(--mx-duration-base) allow-discrete,
+    display var(--mx-duration-base) allow-discrete;
+}
+dialog.mx-dialog[open] {
+  opacity: 1;
+  transform: none;
+}
+@starting-style {
+  dialog.mx-dialog[open] {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+}
+
+dialog.mx-dialog::backdrop {
+  background-color: rgb(0 0 0 / 0);
+  transition:
+    background-color var(--mx-duration-slow) var(--mx-ease),
+    overlay var(--mx-duration-slow) allow-discrete,
+    display var(--mx-duration-slow) allow-discrete;
+}
+dialog.mx-dialog[open]::backdrop {
+  background-color: rgb(0 0 0 / 0.6);
+}
+@starting-style {
+  dialog.mx-dialog[open]::backdrop {
+    background-color: rgb(0 0 0 / 0);
+  }
+}
+
+/* Drawer: soldan sürüşərək açılır */
+dialog.mx-drawer {
+  transform: translateX(-100%);
+  transition:
+    transform var(--mx-duration-slow) var(--mx-ease),
+    overlay var(--mx-duration-slow) allow-discrete,
+    display var(--mx-duration-slow) allow-discrete;
+}
+dialog.mx-drawer[open] {
+  transform: none;
+}
+@starting-style {
+  dialog.mx-drawer[open] {
+    transform: translateX(-100%);
+  }
+}
+dialog.mx-drawer::backdrop {
+  background-color: rgb(0 0 0 / 0);
+  transition:
+    background-color var(--mx-duration-slow) var(--mx-ease),
+    overlay var(--mx-duration-slow) allow-discrete,
+    display var(--mx-duration-slow) allow-discrete;
+}
+dialog.mx-drawer[open]::backdrop {
+  background-color: rgb(0 0 0 / 0.6);
+}
+@starting-style {
+  dialog.mx-drawer[open]::backdrop {
+    background-color: rgb(0 0 0 / 0);
+  }
+}

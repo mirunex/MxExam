@@ -1,0 +1,28 @@
+{% extends 'superadmin_base.html' %}
+{% block title %}Yeni müəssisə{% endblock %}
+
+{% block content %}
+<div class="top">
+    <div>
+        <h1>Yeni müəssisə</h1>
+        <p class="sub">Müəssisəni əlavə et, sonra ona admin təyin edəcəyik.</p>
+    </div>
+</div>
+
+<div class="panel" style="max-width:560px">
+    <form method="post" novalidate>
+        {% csrf_token %}
+        <div style="margin-bottom:18px">
+            <label for="{{ form.name.id_for_label }}">{{ form.name.label }}</label>
+            {{ form.name }}
+            {% for error in form.name.errors %}
+                <div class="err">{{ error }}</div>
+            {% endfor %}
+        </div>
+        <div style="display:flex;gap:10px">
+            <button type="submit" class="btn">Yarat</button>
+            <a class="btn ghost" href="{% url 'superadmin_dashboard' %}">Ləğv et</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

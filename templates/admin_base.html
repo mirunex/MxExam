@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% block title %}Admin paneli{% endblock %} · ExamGuard</title>
+
+<style>
+:root{
+    --bg:#f4f7f5;
+    --card:#ffffff;
+    --text:#17211d;
+    --muted:#6d7b74;
+    --line:#e2e9e5;
+    --sidebar:#123328;
+    --sidebar-hover:#1d4a3a;
+    --green:#17875d;
+    --green-dark:#0d6242;
+    --mint:#dff5e9;
+    --gold:#e9b949;
+    --danger:#c94848;
+}
+
+*{box-sizing:border-box}
+body{
+    margin:0;
+    min-height:100vh;
+    display:flex;
+    font-family:"Segoe UI",Arial,sans-serif;
+    background:var(--bg);
+    color:var(--text);
+}
+
+aside{
+    width:260px;
+    min-height:100vh;
+    padding:26px 16px;
+    display:flex;
+    flex-direction:column;
+    background:var(--sidebar);
+    color:white;
+    position:sticky;
+    top:0;
+    height:100vh;
+}
+
+.brand{
+    display:flex;
+    align-items:center;
+    gap:11px;
+    padding:0 10px;
+    font-size:21px;
+    font-weight:800;
+    letter-spacing:-.4px;
+}
+
+.brand-mark{
+    width:37px;
+    height:37px;
+    display:grid;
+    place-items:center;
+    border-radius:11px;
+    background:var(--gold);
+    color:#193126;
+    font-size:18px;
+}
+
+.role{
+    margin:8px 10px 30px 58px;
+    color:#b8d7c9;
+    font-size:11px;
+    font-weight:700;
+    letter-spacing:1.1px;
+    text-transform:uppercase;
+}
+
+nav a{
+    display:flex;
+    align-items:center;
+    gap:11px;
+    padding:12px 14px;
+    margin:4px 0;
+    border-radius:11px;
+    color:#c8ded4;
+    text-decoration:none;
+    font-size:14px;
+    transition:.2s;
+}
+
+nav a:hover{
+    background:var(--sidebar-hover);
+    color:white;
+}
+
+nav a.on{
+    background:var(--mint);
+    color:var(--green-dark);
+    font-weight:700;
+}
+
+.me{
+    margin-top:auto;
+    padding:18px 10px 0;
+    border-top:1px solid #285444;
+    color:#b8d7c9;
+    font-size:13px;
+}
+
+.me b{
+    display:block;
+    margin-bottom:3px;
+    color:white;
+}
+
+.out{
+    margin-top:10px;
+    padding:0;
+    border:0;
+    background:none;
+    color:var(--gold);
+    font-size:13px;
+    cursor:pointer;
+}
+
+main{
+    flex:1;
+    min-width:0;
+    padding:34px 42px;
+}
+
+.top{
+    display:flex;
+    align-items:flex-end;
+    justify-content:space-between;
+    gap:18px;
+    flex-wrap:wrap;
+    margin-bottom:27px;
+}
+
+.kicker{
+    margin:0 0 6px;
+    color:var(--green);
+    font-size:12px;
+    font-weight:800;
+    letter-spacing:1px;
+    text-transform:uppercase;
+}
+
+h1{
+    margin:0;
+    font-size:29px;
+    letter-spacing:-.8px;
+}
+
+.sub{
+    margin:7px 0 0;
+    color:var(--muted);
+    font-size:14px;
+}
+
+.btn{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    padding:12px 17px;
+    border:0;
+    border-radius:11px;
+    background:var(--green);
+    color:white;
+    font-size:14px;
+    font-weight:700;
+    text-decoration:none;
+    cursor:pointer;
+    transition:.2s;
+}
+
+.btn:hover{
+    background:var(--green-dark);
+    transform:translateY(-1px);
+}
+
+.panel{
+    padding:22px;
+    border:1px solid var(--line);
+    border-radius:18px;
+    background:var(--card);
+    box-shadow:0 8px 22px rgba(25,65,47,.04);
+}
+
+.msg{
+    margin-bottom:18px;
+    padding:13px 15px;
+    border:1px solid #bfe8d1;
+    border-radius:12px;
+    background:#e6f8ed;
+    color:#17653f;
+    font-size:14px;
+}
+
+.msg.error{
+    background:#fff0f0;
+    border-color:#f2caca;
+    color:var(--danger);
+}
+
+label{
+    display:block;
+    margin-bottom:6px;
+    color:var(--muted);
+    font-size:13px;
+    font-weight:600;
+}
+
+.form-control{
+    width:100%;
+    padding:12px 13px;
+    border:1px solid var(--line);
+    border-radius:10px;
+    background:white;
+    color:var(--text);
+    font-size:14px;
+}
+
+.form-control:focus{
+    outline:3px solid #d8f2e5;
+    border-color:var(--green);
+}
+
+.err{
+    margin-top:6px;
+    color:var(--danger);
+    font-size:13px;
+}
+
+@media(max-width:800px){
+    body{display:block}
+
+    aside{
+        width:100%;
+        min-height:auto;
+        height:auto;
+        position:static;
+    }
+
+    nav{
+        display:flex;
+        gap:6px;
+        flex-wrap:wrap;
+    }
+
+    nav a{margin:0}
+
+    .me{display:none}
+
+    main{padding:24px 16px}
+}
+</style>
+
+{% block extra_css %}{% endblock %}
+</head>
+
+<body>
+<aside>
+    <div class="brand">
+        <div class="brand-mark">E</div>
+        <span>ExamGuard</span>
+    </div>
+
+    <div class="role">
+        Admin · {{ request.user.institution.name }}
+    </div>
+
+    {% with current=request.resolver_match.url_name %}
+    <nav>
+        <a class="{% if current == 'admin_dashboard' %}on{% endif %}"
+           href="{% url 'admin_dashboard' %}">
+            ◫ İdarə paneli
+        </a>
+
+        <a class="{% if current == 'teacher_create' %}on{% endif %}"
+           href="{% url 'teacher_create' %}">
+            ＋ Yeni müəllim
+        </a>
+        <a href="{% url 'student_create' %}" class="{% if current == 'student_create' %}on{% endif %}">＋ Yeni tələbə</a>
+        <a href="{% url 'student_import' %}" class="{% if current == 'student_import' %}on{% endif %}">Excel ilə tələbə</a>
+        <a href="{% url 'admin_users' %}" class="{% if current == 'admin_users' %}on{% endif %}">Müəllim və qruplar</a>
+        <a class="{% if current == 'admin_groups' %}on{% endif %}"
+   href="{% url 'admin_groups' %}">
+    ◉ Qruplar
+</a>
+    </nav>
+    {% endwith %}
+
+    <div class="me">
+        <b>{{ request.user.get_full_name|default:request.user.username }}</b>
+        {{ request.user.institution.name }}
+
+        <form method="post" action="{% url 'logout' %}">
+            {% csrf_token %}
+            <button type="submit" class="out">Çıxış et →</button>
+        </form>
+    </div>
+</aside>
+
+<main>
+    {% for m in messages %}
+        <div class="msg {% if m.tags == 'error' %}error{% endif %}">
+            {{ m }}
+        </div>
+    {% endfor %}
+
+    {% block content %}{% endblock %}
+</main>
+
+{% block extra_js %}{% endblock %}
+</body>
+</html>

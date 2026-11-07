@@ -1,0 +1,52 @@
+{% extends 'teacher_base.html' %}
+{% block title %}Nəticələr{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="fw-bold mb-0">📊 {{ exam.title }}: nəticələr</h4>
+    <a href="{% url 'teacher_dashboard' %}" class="btn btn-outline-light rounded-pill px-4">← İmtahanlar</a>
+</div>
+
+<div class="glass-panel p-4">
+    {% if results %}
+    <div class="table-responsive">
+        <table class="table table-dark table-borderless align-middle mb-0" style="--bs-table-bg: transparent;">
+            <thead>
+                <tr class="text-white-50 small">
+                    <th>#</th>
+                    <th>Tələbə</th>
+                    <th>Bal</th>
+                    <th>Faiz</th>
+                    <th>Təhvil vaxtı</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for r in results %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td class="fw-semibold">{{ r.student.get_full_name|default:r.student.username }}</td>
+                    <td>{{ r.score }} / {{ r.total }}</td>
+                    <td>{% widthratio r.score r.total 100 %}%</td>
+                    <td>{{ r.submitted_at|date:"d.m.Y H:i" }}</td>
+                    <td class="text-end">
+                        <a href="{% url 'grade_written' exam.id r.student.id %}"
+                           class="btn btn-sm btn-outline-light rounded-pill">Yoxla</a>
+
+                        <form method="post" action="{% url 'reset_result' exam.id r.student.id %}"
+                              class="d-inline"
+                              onsubmit="return confirm('Bu tələbənin nəticəsi və cavabları silinəcək, imtahana yenidən girə biləcək. Davam edək?');">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill">Sıfırla</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+        <p class="text-white-50 text-center py-5 mb-0">Hələ heç kim təhvil verməyib.</p>
+    {% endif %}
+</div>
+{% endblock %}

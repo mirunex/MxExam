@@ -1,0 +1,143 @@
+{% extends "admin_base.html" %}
+{% block title %}Qruplar{% endblock %}
+
+{% block extra_css %}
+<style>
+.groups-layout{
+    display:grid;
+    grid-template-columns:minmax(280px, .8fr) minmax(420px, 1.2fr);
+    gap:20px;
+    align-items:start;
+}
+
+.form-row{
+    margin-bottom:16px;
+}
+
+.form-row ul{
+    margin:6px 0 0;
+    padding-left:18px;
+    color:var(--danger);
+    font-size:13px;
+}
+
+.groups-table{
+    width:100%;
+    border-collapse:collapse;
+}
+
+.groups-table th,
+.groups-table td{
+    padding:14px 10px;
+    border-bottom:1px solid var(--line);
+    text-align:left;
+    font-size:14px;
+}
+
+.groups-table th{
+    color:var(--muted);
+    font-size:12px;
+    font-weight:800;
+    letter-spacing:.5px;
+    text-transform:uppercase;
+}
+
+.groups-table tr:last-child td{
+    border-bottom:0;
+}
+
+.group-name{
+    font-weight:700;
+}
+
+.teacher-name{
+    color:var(--muted);
+}
+
+.empty{
+    padding:25px 10px;
+    color:var(--muted);
+    text-align:center;
+}
+
+@media(max-width:900px){
+    .groups-layout{
+        grid-template-columns:1fr;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="top">
+    <div>
+        <p class="kicker">Qrup idarəetməsi</p>
+        <h1>Qruplar</h1>
+        <p class="sub">
+            Qrup yarat və onu müəssisənin müəllimlərindən birinə təyin et.
+        </p>
+    </div>
+</div>
+
+<div class="groups-layout">
+    <div class="panel">
+        <h2 style="margin-top:0;">Yeni qrup</h2>
+
+        <form method="post">
+            {% csrf_token %}
+
+            <div class="form-row">
+                <label for="{{ group_form.name.id_for_label }}">
+                    {{ group_form.name.label }}
+                </label>
+                {{ group_form.name }}
+                {{ group_form.name.errors }}
+            </div>
+
+            <div class="form-row">
+                <label for="{{ group_form.teacher.id_for_label }}">
+                    {{ group_form.teacher.label }}
+                </label>
+                {{ group_form.teacher }}
+                {{ group_form.teacher.errors }}
+            </div>
+
+            <button class="btn" type="submit">
+                ＋ Qrupu yarat
+            </button>
+        </form>
+    </div>
+
+    <div class="panel">
+        <h2 style="margin-top:0;">Mövcud qruplar</h2>
+
+        <table class="groups-table">
+            <thead>
+                <tr>
+                    <th>Qrup</th>
+                    <th>Müəllim</th>
+                    <th>Tələbə sayı</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for group in groups %}
+                <tr>
+                    <td class="group-name">{{ group.name }}</td>
+                    <td class="teacher-name">
+                        {{ group.teacher.get_full_name|default:group.teacher.username }}
+                    </td>
+                    <td>{{ group.students.count }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="3" class="empty">
+                        Hələ qrup yaradılmayıb.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

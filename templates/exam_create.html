@@ -1,0 +1,97 @@
+{% extends 'teacher_base.html' %}
+{% block title %}Yeni imtahan{% endblock %}
+
+{% block extra_head %}
+<style>
+    .form-control, .form-select {
+        background: rgba(255,255,255,0.08) !important;
+        border: 1px solid rgba(255,255,255,0.2) !important;
+        color: #fff !important;
+        border-radius: 12px;
+    }
+    .form-select option { background: #1e1b4b; color: #fff; }
+</style>
+{% endblock %}
+
+{% block content %}
+<h4 class="fw-bold mb-4">➕ Yeni imtahan</h4>
+
+<div class="glass-panel p-4" style="max-width: 760px;">
+    <form method="post" enctype="multipart/form-data" novalidate>
+        {% csrf_token %}
+
+        {% if exam_form.non_field_errors %}
+            <div class="alert alert-danger bg-opacity-25 text-white">{{ exam_form.non_field_errors }}</div>
+        {% endif %}
+
+        <div class="mb-3">
+            <label class="form-label small text-white-50">İmtahan adı</label>
+            {{ exam_form.title }}
+            <div class="text-danger small">{{ exam_form.title.errors }}</div>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label small text-white-50">Açıqlama</label>
+            {{ exam_form.description }}
+            <div class="text-danger small">{{ exam_form.description.errors }}</div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label class="form-label small text-white-50">İmtahan növü</label>
+                {{ exam_form.exam_type }}
+                <div class="text-danger small">{{ exam_form.exam_type.errors }}</div>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label class="form-label small text-white-50">Başlama vaxtı</label>
+                {{ exam_form.start_time }}
+                <div class="text-danger small">{{ exam_form.start_time.errors }}</div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-4 mb-3">
+                <label class="form-label small text-white-50">Müddət (dəqiqə)</label>
+                {{ exam_form.duration_minutes }}
+                <div class="text-danger small">{{ exam_form.duration_minutes.errors }}</div>
+            </div>
+            <div class="col-md-4 mb-3">
+                <label class="form-label small text-white-50">Max xəbərdarlıq</label>
+                {{ exam_form.max_warnings }}
+                <div class="text-danger small">{{ exam_form.max_warnings.errors }}</div>
+            </div>
+            <div class="col-md-4 mb-3">
+                <label class="form-label small text-white-50">Hər tələbəyə sual sayı</label>
+                {{ exam_form.questions_per_student }}
+                <div class="text-danger small">{{ exam_form.questions_per_student.errors }}</div>
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label small text-white-50">Qruplar</label>
+            <div>{{ exam_form.groups }}</div>
+            <div class="text-danger small">{{ exam_form.groups.errors }}</div>
+        </div>
+
+        <div class="mb-3 form-check">
+            {{ exam_form.allow_reentry }}
+            <label class="form-check-label" for="{{ exam_form.allow_reentry.id_for_label }}">
+                {{ exam_form.allow_reentry.label }}
+            </label>
+        </div>
+
+        <div class="mb-4">
+            <label class="form-label small text-white-50">Sual faylı (PDF və ya Excel)</label>
+            <input type="file" name="pdf_file" accept=".pdf" class="form-control" required>
+            {% for error in pdf_form.pdf_file.errors %}
+                <div class="text-danger small mt-1">{{ error }}</div>
+            {% endfor %}
+        </div>
+
+        <div class="d-flex gap-2">
+            <button type="submit" class="btn-glass-gradient px-4 py-2 border-0">İmtahanı yarat</button>
+            <a href="{% url 'teacher_dashboard' %}" class="btn btn-outline-light rounded-pill px-4">Ləğv et</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

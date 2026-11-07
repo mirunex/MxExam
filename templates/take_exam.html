@@ -1,0 +1,205 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="az">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{ exam.title }} — ExamGuard</title>
+<style>
+  :root{
+    --bg:#0f172a; --glass:rgba(255,255,255,.07); --line:rgba(255,255,255,.13);
+    --txt:#f8fafc; --mut:#94a3b8; --p1:#ec4899; --p2:#8b5cf6; --warn:#fbbf24; --ok:#34d399;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; min-height:100vh; color:var(--txt); font-family:Segoe UI,Arial,sans-serif;
+    background:radial-gradient(circle at top left,#312e81 0%,transparent 35%),
+               radial-gradient(circle at bottom right,#7e22ce 0%,transparent 35%),var(--bg);
+    background-attachment:fixed;
+  }
+  .layout{display:grid;grid-template-columns:290px 1fr;gap:22px;max-width:1200px;margin:0 auto;padding:22px}
+  .card{background:var(--glass);border:1px solid var(--line);border-radius:20px;backdrop-filter:blur(16px);box-shadow:0 12px 32px rgba(0,0,0,.2)}
+
+  aside.side{position:sticky;top:22px;align-self:start;padding:20px}
+  .brand{font-weight:700;font-size:18px;margin-bottom:16px}
+  .brand span{color:var(--p1)}
+  .lbl{font-size:12px;color:var(--mut);text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px}
+  .val{font-weight:600;margin-bottom:14px;word-break:break-word}
+  .timer{text-align:center;padding:14px;border-radius:16px;margin-bottom:16px;
+         background:rgba(245,158,11,.14);border:1px solid rgba(251,191,36,.4);color:#fef3c7}
+  .timer b{display:block;font-size:34px;letter-spacing:.04em}
+  .timer.low{background:rgba(239,68,68,.18);border-color:rgba(239,68,68,.6);color:#fecaca}
+  .bar{height:9px;background:rgba(255,255,255,.12);border-radius:99px;overflow:hidden;margin:6px 0 16px}
+  .bar div{height:100%;width:0;background:linear-gradient(90deg,var(--p1),var(--p2));transition:width .25s}
+  .nav{display:grid;grid-template-columns:repeat(5,1fr);gap:7px;margin-bottom:16px}
+  .nav a{display:flex;align-items:center;justify-content:center;height:34px;border-radius:9px;font-size:13px;
+         text-decoration:none;color:var(--txt);background:rgba(255,255,255,.07);border:1px solid var(--line)}
+  .nav a.done{background:rgba(52,211,153,.2);border-color:var(--ok);color:#d1fae5}
+  .warn{display:flex;justify-content:space-between;padding:10px 12px;border-radius:12px;margin-bottom:16px;
+        background:rgba(255,255,255,.05);border:1px solid var(--line);font-size:14px}
+  .warn b{color:var(--warn)}
+  .finish{width:100%;border:0;color:#fff;font-weight:600;font-size:15px;padding:13px;border-radius:13px;cursor:pointer;
+          background:linear-gradient(135deg,var(--p1),var(--p2));box-shadow:0 8px 22px rgba(168,85,247,.35)}
+  .finish:hover{transform:translateY(-2px)}
+
+  .head{padding:22px 26px;margin-bottom:18px}
+  .head small{color:#67e8f9;font-weight:600}
+  .head h1{margin:6px 0 4px;font-size:26px}
+  .head p{margin:0;color:var(--mut)}
+  .q{padding:22px 26px;margin-bottom:18px;scroll-margin-top:22px}
+  .qrow{display:flex;gap:14px;align-items:flex-start}
+  .qnum{flex:none;width:38px;height:38px;display:flex;align-items:center;justify-content:center;border-radius:12px;
+        font-weight:700;background:linear-gradient(135deg,var(--p1),var(--p2))}
+  .q h3{margin:6px 0 4px;font-size:18px;font-weight:600;white-space:pre-wrap}
+  .pts{font-size:12px;color:var(--mut);margin-bottom:4px}
+  .opt{display:block;padding:13px 16px;margin-top:11px;cursor:pointer;border-radius:12px;color:#e2e8f0;
+       background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);transition:.2s}
+  .opt:hover{transform:translateX(4px);background:rgba(139,92,246,.2);border-color:rgba(196,181,253,.6)}
+  .opt input{margin-right:10px;accent-color:#a855f7}
+  .opt:has(input:checked){color:#fff;background:rgba(139,92,246,.32);border-color:#c084fc}
+  .answer-box{width:100%;margin-top:12px;padding:13px 16px;border-radius:12px;color:#fff;font:inherit;resize:vertical;
+              background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.15)}
+  .answer-box:focus{outline:none;border-color:#c084fc;background:rgba(139,92,246,.18)}
+  .empty{padding:40px;text-align:center}
+
+  @media(max-width:860px){
+    .layout{grid-template-columns:1fr}
+    aside.side{position:static}
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+
+  <aside class="side card">
+    <div class="brand">Exam<span>Guard</span></div>
+
+    <div class="lbl">Tələbə</div>
+    <div class="val">{{ request.user.get_full_name|default:request.user.username }}</div>
+
+    <div class="lbl">İmtahan</div>
+    <div class="val">{{ exam.title }}</div>
+
+    <div class="timer" id="timerBox">
+      <small>Qalan vaxt</small>
+      <b id="timer">--:--</b>
+    </div>
+
+    <div class="lbl">Cavablandırılan</div>
+    <div class="val" id="progressText" style="margin-bottom:0">0 / {{ questions|length }}</div>
+    <div class="bar"><div id="progressBar"></div></div>
+
+    <div class="lbl">Suallar</div>
+    <div class="nav">
+      {% for question in questions %}
+        <a href="#q{{ question.id }}" id="nav{{ question.id }}">{{ forloop.counter }}</a>
+      {% endfor %}
+    </div>
+
+    <div class="warn"><span>Xəbərdarlıqlar</span><b id="warnCount">0</b></div>
+
+    {% if questions %}
+      <button type="submit" form="examForm" class="finish">İmtahanı Bitir</button>
+    {% endif %}
+  </aside>
+
+  <main>
+    <section class="head card">
+      <small>AKTİV İMTAHAN</small>
+      <h1>{{ exam.title }}</h1>
+      <p>{{ exam.description|default:"İmtahan suallarını diqqətlə cavablandırın." }}</p>
+    </section>
+
+    <form id="examForm" method="post" data-total-questions="{{ questions|length }}">
+      {% csrf_token %}
+      {% for question in questions %}
+        <section class="q card" id="q{{ question.id }}">
+          <div class="qrow">
+            <span class="qnum">{{ forloop.counter }}</span>
+            <div style="flex:1">
+              <h3>{{ question.text }}</h3>
+              <div class="pts">{{ question.points }} bal</div>
+
+              {% if question.question_type == 'written' %}
+                <textarea name="question_{{ question.id }}" data-q="{{ question.id }}"
+                          class="answer-box" rows="7" placeholder="Cavabınızı bura yazın..."></textarea>
+              {% else %}
+                <label class="opt"><input type="radio" name="question_{{ question.id }}" value="A" data-q="{{ question.id }}"><strong>A.</strong> {{ question.option_a }}</label>
+                <label class="opt"><input type="radio" name="question_{{ question.id }}" value="B" data-q="{{ question.id }}"><strong>B.</strong> {{ question.option_b }}</label>
+                <label class="opt"><input type="radio" name="question_{{ question.id }}" value="C" data-q="{{ question.id }}"><strong>C.</strong> {{ question.option_c }}</label>
+                <label class="opt"><input type="radio" name="question_{{ question.id }}" value="D" data-q="{{ question.id }}"><strong>D.</strong> {{ question.option_d }}</label>
+              {% endif %}
+            </div>
+          </div>
+        </section>
+      {% empty %}
+        <section class="card empty"><h3>Bu imtahana sual əlavə edilməyib.</h3></section>
+      {% endfor %}
+    </form>
+  </main>
+</div>
+
+<script>
+  const form = document.getElementById('examForm');
+  const total = Number(form.dataset.totalQuestions) || 0;
+
+  function countAnswered(markNav) {
+    let answered = 0;
+    if (markNav) {
+      document.querySelectorAll('.nav a').forEach(function (a) { a.classList.remove('done'); });
+    }
+    form.querySelectorAll('input[type="radio"]:checked, textarea').forEach(function (el) {
+      if (el.tagName === 'TEXTAREA' && !el.value.trim()) return;
+      answered++;
+      if (markNav) {
+        const a = document.getElementById('nav' + el.dataset.q);
+        if (a) a.classList.add('done');
+      }
+    });
+    return answered;
+  }
+
+  function updateProgress() {
+    const answered = countAnswered(true);
+    document.getElementById('progressText').textContent = answered + ' / ' + total;
+    document.getElementById('progressBar').style.width = (total ? answered / total * 100 : 0) + '%';
+  }
+
+  form.querySelectorAll('input[type="radio"], textarea').forEach(function (i) {
+    i.addEventListener('input', updateProgress);
+    i.addEventListener('change', updateProgress);
+  });
+
+  let left = Number("{{ remaining_seconds }}");
+  const timerEl = document.getElementById('timer');
+  const timerBox = document.getElementById('timerBox');
+
+  function render() {
+    const m = String(Math.floor(left / 60)).padStart(2, '0');
+    const s = String(left % 60).padStart(2, '0');
+    timerEl.textContent = m + ':' + s;
+    if (left <= 60) timerBox.classList.add('low');
+  }
+  render();
+
+  const t = setInterval(function () {
+    left--;
+    render();
+    if (left <= 0) {
+      clearInterval(t);
+      form.submit();
+    }
+  }, 1000);
+
+  form.addEventListener('submit', function (e) {
+    const answered = countAnswered(false);
+    if (answered < total && left > 0) {
+      if (!confirm((total - answered) + ' sual cavabsızdır. Bitirmək istəyirsən?')) {
+        e.preventDefault();
+      }
+    }
+  });
+</script>
+{% include "_proctor.html" %}
+</body>
+</html>

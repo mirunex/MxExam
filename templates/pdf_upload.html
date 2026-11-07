@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+    <meta charset="UTF-8">
+    <title>İmtahana PDF yüklə</title>
+</head>
+<body>
+    <h1>{{ exam.title }} — PDF sual yüklə</h1>
+
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">PDF-i oxu</button>
+    </form>
+
+    <a href="{% url 'teacher_dashboard' %}">Müəllim panelinə qayıt</a>
+</body>
+</html>

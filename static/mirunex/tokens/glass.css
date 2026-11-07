@@ -1,0 +1,221 @@
+/* =========================================================
+   Mirunex "liquid glass"
+   semantic.css və motion.css-dən SONRA import olunmalıdır.
+   Burada: şüşə tokenləri, fon ləkələri, ortaq qaydalar.
+   Layihə temaları (themes/*.css) bundan SONRA gəlir.
+   ========================================================= */
+
+/* ---------- Temadan asılı olmayan tokenlər ---------- */
+:root {
+  --mx-glass-blur: 24px;
+  --mx-glass-saturate: 170%;
+
+  --mx-radius-sm: 6px;
+  --mx-radius-md: 14px;
+  --mx-radius-lg: 22px;
+  --mx-radius-xl: 28px;
+  --mx-radius-pill: 999px;
+
+  /* Hərəkət: yumşaq ease-out */
+  --mx-duration-fast: 150ms;
+  --mx-duration-base: 220ms;
+  --mx-duration-slow: 320ms;
+  --mx-ease: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* ---------- Tünd (defolt) ---------- */
+:root,
+[data-theme="dark"] {
+  --mx-bg: var(--mx-ink-950);
+
+  --mx-glass-bg: rgb(255 255 255 / 0.08);
+  --mx-glass-bg-raised: rgb(255 255 255 / 0.13);
+  --mx-glass-border: rgb(255 255 255 / 0.22);
+  --mx-glass-highlight: rgb(255 255 255 / 0.22);
+  --mx-glass-sheen: rgb(255 255 255 / 0.07);
+  --mx-glass-shadow: 0 8px 32px rgb(0 0 0 / 0.35);
+  --mx-shadow-md: 0 12px 32px rgb(0 0 0 / 0.4);
+  --mx-shadow-lg: 0 24px 64px rgb(0 0 0 / 0.5);
+  --mx-field-bg: rgb(255 255 255 / 0.06);
+
+  /* Qeyri-şəffaf (opaque) səthlər: kod, uzun mətn, cədvəl */
+  --mx-surface-solid: var(--mx-ink-900);
+  --mx-surface-raised-solid: var(--mx-ink-800);
+  --mx-border-solid: var(--mx-ink-700);
+
+  --mx-surface: var(--mx-glass-bg);
+  --mx-surface-raised: var(--mx-glass-bg-raised);
+  --mx-border: rgb(255 255 255 / 0.12);
+  --mx-border-strong: rgb(255 255 255 / 0.3);
+  --mx-text-muted: #A8A5C2;
+
+  --mx-primary-subtle: color-mix(in srgb, var(--mx-primary) 22%, transparent);
+  --mx-secondary-subtle: color-mix(in srgb, var(--mx-secondary) 22%, transparent);
+  --mx-danger-subtle: color-mix(in srgb, var(--mx-danger) 20%, transparent);
+  --mx-focus-halo: color-mix(in srgb, var(--mx-ring) 50%, transparent);
+  --mx-danger-halo: color-mix(in srgb, var(--mx-danger) 50%, transparent);
+
+  --mx-mesh:
+    radial-gradient(52rem 38rem at 6% -8%, color-mix(in srgb, var(--mx-primary) 40%, transparent), transparent 62%),
+    radial-gradient(46rem 34rem at 98% 2%, color-mix(in srgb, var(--mx-secondary) 32%, transparent), transparent 62%),
+    radial-gradient(44rem 34rem at 72% 110%, rgb(217 70 239 / 0.2), transparent 62%),
+    radial-gradient(36rem 28rem at -4% 100%, rgb(37 99 235 / 0.2), transparent 62%);
+}
+
+/* ---------- İşıqlı (dark-dan SONRA gəlməlidir) ---------- */
+[data-theme="light"] {
+  --mx-bg: #F1EFFA;
+
+  --mx-glass-bg: rgb(255 255 255 / 0.42);
+  --mx-glass-bg-raised: rgb(255 255 255 / 0.62);
+  --mx-glass-border: rgb(255 255 255 / 0.7);
+  --mx-glass-highlight: rgb(255 255 255 / 0.9);
+  --mx-glass-sheen: rgb(255 255 255 / 0.35);
+  --mx-glass-shadow: 0 0 0 1px rgb(15 23 42 / 0.04), 0 8px 32px rgb(76 29 149 / 0.12);
+  --mx-shadow-md: 0 12px 32px rgb(76 29 149 / 0.16);
+  --mx-shadow-lg: 0 24px 64px rgb(76 29 149 / 0.22);
+  --mx-field-bg: rgb(255 255 255 / 0.55);
+
+  --mx-surface-solid: #FFFFFF;
+  --mx-surface-raised-solid: #FFFFFF;
+  --mx-border-solid: var(--mx-neutral-200);
+
+  --mx-surface: var(--mx-glass-bg);
+  --mx-surface-raised: var(--mx-glass-bg-raised);
+  --mx-border: rgb(15 23 42 / 0.09);
+  --mx-border-strong: rgb(15 23 42 / 0.2);
+  --mx-text-muted: var(--mx-neutral-600);
+
+  --mx-primary-subtle: color-mix(in srgb, var(--mx-primary) 12%, transparent);
+  --mx-secondary-subtle: color-mix(in srgb, var(--mx-secondary) 12%, transparent);
+  --mx-danger-subtle: color-mix(in srgb, var(--mx-danger) 10%, transparent);
+  --mx-focus-halo: color-mix(in srgb, var(--mx-ring) 40%, transparent);
+  --mx-danger-halo: color-mix(in srgb, var(--mx-danger) 40%, transparent);
+
+  --mx-mesh:
+    radial-gradient(52rem 38rem at 6% -8%, color-mix(in srgb, var(--mx-primary) 30%, transparent), transparent 62%),
+    radial-gradient(46rem 34rem at 98% 2%, color-mix(in srgb, var(--mx-secondary) 24%, transparent), transparent 62%),
+    radial-gradient(44rem 34rem at 72% 110%, rgb(217 70 239 / 0.18), transparent 62%),
+    radial-gradient(36rem 28rem at -4% 100%, rgb(37 99 235 / 0.16), transparent 62%);
+}
+
+/* ---------- Fallback: backdrop-filter yoxdursa və ya "şəffaflığı azalt" seçilibsə ---------- */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  :root,
+  [data-theme="dark"] {
+    --mx-glass-bg: var(--mx-surface-solid);
+    --mx-glass-bg-raised: var(--mx-surface-raised-solid);
+    --mx-field-bg: var(--mx-surface-solid);
+    --mx-glass-sheen: transparent;
+  }
+  [data-theme="light"] {
+    --mx-glass-bg: var(--mx-surface-solid);
+    --mx-glass-bg-raised: var(--mx-surface-raised-solid);
+    --mx-field-bg: var(--mx-surface-solid);
+    --mx-glass-sheen: transparent;
+  }
+}
+@media (prefers-reduced-transparency: reduce) {
+  :root,
+  [data-theme="dark"] {
+    --mx-glass-blur: 0px;
+    --mx-glass-bg: var(--mx-surface-solid);
+    --mx-glass-bg-raised: var(--mx-surface-raised-solid);
+    --mx-field-bg: var(--mx-surface-solid);
+    --mx-glass-sheen: transparent;
+  }
+  [data-theme="light"] {
+    --mx-glass-blur: 0px;
+    --mx-glass-bg: var(--mx-surface-solid);
+    --mx-glass-bg-raised: var(--mx-surface-raised-solid);
+    --mx-field-bg: var(--mx-surface-solid);
+    --mx-glass-sheen: transparent;
+  }
+}
+
+/* ---------- Fon: rəngli bulanıq ləkələr (şüşə bunların üstündə görünür) ---------- */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: var(--mx-mesh);
+}
+
+/* Müstəqil konteyner üçün (məs. demo paneli): <div class="mx-mesh" data-theme="light"> */
+.mx-mesh {
+  position: relative;
+  isolation: isolate;
+  background-color: var(--mx-bg);
+  color: var(--mx-text);
+}
+.mx-mesh::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  pointer-events: none;
+  background: var(--mx-mesh);
+}
+
+/* ---------- Şüşə səthlər (React / Tailwind) ----------
+   bg-surface və bg-surface-raised istifadə edən hər element avtomatik şüşə olur.
+   Qeyri-şəffaf lazımdırsa: className="mx-solid" və ya bg-solid. */
+@layer components {
+  .bg-surface,
+  .bg-surface-raised {
+    background-image: linear-gradient(180deg, var(--mx-glass-sheen), transparent 55%);
+    -webkit-backdrop-filter: blur(var(--mx-glass-blur)) saturate(var(--mx-glass-saturate));
+    backdrop-filter: blur(var(--mx-glass-blur)) saturate(var(--mx-glass-saturate));
+    border-color: var(--mx-glass-border);
+    box-shadow: inset 0 1px 0 var(--mx-glass-highlight), var(--mx-glass-shadow);
+  }
+
+  /* Gradient düymələr: rəng tokenlərindən törəyir, layihə teması ilə dəyişir */
+  .mx-btn-primary {
+    background-color: var(--mx-primary);
+    background-image: linear-gradient(180deg, color-mix(in srgb, var(--mx-primary) 90%, white), var(--mx-primary) 58%, color-mix(in srgb, var(--mx-primary) 80%, black));
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.35), 0 8px 20px -8px color-mix(in srgb, var(--mx-primary) 70%, transparent);
+  }
+  .mx-btn-secondary {
+    background-color: var(--mx-secondary);
+    background-image: linear-gradient(180deg, color-mix(in srgb, var(--mx-secondary) 90%, white), var(--mx-secondary) 58%, color-mix(in srgb, var(--mx-secondary) 80%, black));
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.3), 0 8px 20px -8px color-mix(in srgb, var(--mx-secondary) 70%, transparent);
+  }
+  .mx-btn-danger {
+    background-color: var(--mx-danger);
+    background-image: linear-gradient(180deg, var(--mx-danger), color-mix(in srgb, var(--mx-danger) 88%, black));
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.25), 0 8px 20px -8px color-mix(in srgb, var(--mx-danger) 70%, transparent);
+  }
+  .mx-btn-primary:hover,
+  .mx-btn-secondary:hover,
+  .mx-btn-danger:hover {
+    filter: brightness(1.08);
+  }
+}
+
+/* Qeyri-şəffaf (opaque) variant: uzun oxunan və yazılan yerlər üçün */
+.bg-solid,
+.mx-solid {
+  background-color: var(--mx-surface-solid);
+  background-image: none;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  --mx-border: var(--mx-border-solid);
+}
+.mx-solid {
+  border-color: var(--mx-border-solid);
+}
+.mx-solid.bg-surface-raised,
+dialog.mx-solid {
+  background-color: var(--mx-surface-raised-solid);
+}
+
+/* Modal və drawer-in arxa fonu da yumşaq bulanıq olsun */
+dialog.mx-dialog::backdrop,
+dialog.mx-drawer::backdrop {
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+}

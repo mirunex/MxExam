@@ -1,0 +1,46 @@
+{% extends "admin_base.html" %}
+{% block title %}{{ group.name }}{% endblock %}
+
+{% block content %}
+<style>
+  .utable{width:100%;border-collapse:collapse}
+  .utable th,.utable td{text-align:left;padding:10px;border-bottom:1px solid var(--line)}
+  .utable th{color:var(--muted);font-weight:600;font-size:13px}
+  .rm{background:transparent;border:1px solid #e3b4ae;color:var(--red);border-radius:8px;padding:5px 12px;cursor:pointer}
+  .rm:hover{background:#fbe5e2}
+</style>
+
+<div class="top">
+  <div>
+    <h1>Qrup: {{ group.name }}</h1>
+    <div style="color:var(--muted)">Müəllim: {{ group.teacher.get_full_name|default:group.teacher.username }} · {{ students|length }} tələbə</div>
+  </div>
+  <a class="btn ghost" href="{% url 'admin_users' %}">← Geri</a>
+</div>
+
+<div class="panel">
+  <div style="overflow-x:auto">
+  <table class="utable">
+    <tr><th>#</th><th>Ad Soyad</th><th>İstifadəçi adı</th><th>E-poçt</th><th></th></tr>
+    {% for s in students %}
+    <tr>
+      <td>{{ forloop.counter }}</td>
+      <td>{{ s.get_full_name|default:"—" }}</td>
+      <td>{{ s.username }}</td>
+      <td>{{ s.email|default:"—" }}</td>
+      <td style="text-align:right">
+        <form method="post" style="display:inline"
+              onsubmit="return confirm('Bu tələbə qrupdan çıxarılsın? (Hesab silinmir)');">
+          {% csrf_token %}
+          <input type="hidden" name="student_id" value="{{ s.id }}">
+          <button type="submit" class="rm">Qrupdan çıxar</button>
+        </form>
+      </td>
+    </tr>
+    {% empty %}
+    <tr><td colspan="5">Bu qrupda hələ tələbə yoxdur. Excel ilə yükləyə bilərsən.</td></tr>
+    {% endfor %}
+  </table>
+  </div>
+</div>
+{% endblock %}
