@@ -9,6 +9,7 @@ MAX_TESTS = 12
 def _norm(s):
     s = str(s or '').strip()
     s = s.replace('İ', 'i').replace('I', 'i').replace('ı', 'i').lower()
+    s = re.sub(r'[_\-/()]+', ' ', s)
     return ' '.join(s.split())
 
 
@@ -219,32 +220,53 @@ def _parse_academy(ws):
     col = {}
     for i, h in enumerate(rows[0]):
         col.setdefault(_norm(h), i)
+    def get(row, *names):
+        for name in names:
+            i = col.get(_norm(name))
+            if i is not None and i < len(row):
+                value = row[i]
+                if value is not None and str(value).strip() != '':
+                    return value
+        return None
+
     errors = []
-    for name in ("Title", "Description", "Score", "Solution", "Test Cases"):
-        if _norm(name) not in col:
-            errors.append(f"Column not found: '{name}'")
+    for label, aliases in (
+        ('Title (EN)', ('Title EN', 'Title', 'Title English')),
+        ('Description (EN)', ('Description EN', 'Description', 'Description English')),
+        ('Score', ('Score',)),
+        ('Solution', ('Solution',)),
+        ('Test Cases', ('Test Cases',)),
+    ):
+        if not any(_norm(alias) in col for alias in aliases):
+            errors.append(f"Column not found: '{label}'")
     if errors:
         return [], errors
-
-    def get(row, name):
-        i = col.get(_norm(name))
-        return row[i] if i is not None and i < len(row) else None
 
     tasks = []
     for n, row in enumerate(rows[1:], start=2):
         if not any(c not in (None, '') for c in row):
             continue
         pref = f"Row {n}"
-        title_en = _s(get(row, "Title")).strip()
-        title_az = _s(get(row, "Title AZ")).strip() or title_en
-        title_ru = _s(get(row, "Title RU")).strip()
-        language = _s(get(row, "Language")).strip().lower() or 'python'
+        title_en = _s(get(row, 'Title EN', 'Title (EN)', 'Title English', 'Title (English)', 'Title')).strip()
+        title_az = _s(get(row, 'Title AZ', 'Title (AZ)', 'Title Azerbaijani', 'Başlıq (az)')).strip()
+        title_ru = _s(get(row, 'Title RU', 'Title (RU)', 'Title Russian', 'Заголовок RU')).strip()
+        title_en = title_en or title_az or title_ru
+        title_az = title_az or title_en
+        title_ru = title_ru or title_en
+
+        language_raw = _s(get(row, 'Language', 'Programming Language', 'Code Language', 'Dil')).strip().lower()
+        if not language_raw or language_raw.startswith('python') or language_raw == 'py':
+            language = 'python'
+        elif language_raw.startswith('java'):
+            language = 'java'
+        else:
+            language = language_raw
         if language not in ('python', 'java'):
-            errors.append(f"{pref}: Language must be 'python' or 'java'.")
+            errors.append(f"{pref}: Language must be Python or Java.")
             continue
-        d_en = _norm_desc(get(row, "Description"))
-        d_az = _norm_desc(get(row, "Description AZ")) or d_en
-        d_ru = _norm_desc(get(row, "Description RU"))
+        d_en = _norm_desc(get(row, 'Description EN', 'Description (EN)', 'Description English', 'Description (English)', 'Description', 'Təsvir (en)'))
+        d_az = _norm_desc(get(row, 'Description AZ', 'Description (AZ)', 'Description Azerbaijani', 'Təsvir (az)')) or d_en
+        d_ru = _norm_desc(get(row, 'Description RU', 'Description (RU)', 'Description Russian', 'Описание RU')) or d_en
         examples = _nl(get(row, "Examples"))
         ref = _nl(get(row, "Solution"))
         gen = _nl(get(row, "Test Cases"))
@@ -263,7 +285,7 @@ def _parse_academy(ws):
             'number': _s(get(row, "Name")).strip() or str(len(tasks) + 1),
             'language': language, 'kind': 'stdin',
             'title': title_az[:150], 'title_en': title_en[:150], 'title_ru': title_ru[:150],
-            'description': _with_examples(d_az, examples, 'az'),
+            'description': _with_examples(d_az or d_en, examples, 'az'),
             'description_en': _with_examples(d_en, examples, 'en'),
             'description_ru': _with_examples(d_ru, examples, 'ru'),
             'starter_code': _nl(get(row, "Starter Code")), 'reference_code': ref, 'points': points,

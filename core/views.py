@@ -723,10 +723,12 @@ def start_exam_view(request, exam_id):
         for task in tasks:
             task.sub = subs.get(task.id)
             task.initial_code = task.sub.code if task.sub else task.starter_code
+            task.t_az = task.title
             task.t_en = task.title_en or task.title
-            task.t_ru = task.title_ru or task.title
+            task.t_ru = task.title_ru or task.title_en or task.title
+            task.d_az = task.description or task.description_en
             task.d_en = task.description_en or task.description
-            task.d_ru = task.description_ru or task.description
+            task.d_ru = task.description_ru or task.description_en or task.description
 
         return render(request, 'take_code_exam.html', {
             'exam': exam,

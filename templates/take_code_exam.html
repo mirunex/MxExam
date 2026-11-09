@@ -239,7 +239,7 @@
         <div class="selrow">
           <select id="taskSelect">
             {% for task in tasks %}
-              <option value="{{ task.id }}" data-title="{{ task.t_en|truncatechars:90 }}" data-title-en="{{ task.t_en|truncatechars:90 }}" data-title-ru="{{ task.t_ru|truncatechars:90 }}" data-lang="{{ task.language }}" data-pts="{{ task.points|stringformat:'f' }}">{{ forloop.counter }}. {{ task.t_en|truncatechars:70 }}</option>
+              <option value="{{ task.id }}" data-title="{{ task.t_en|truncatechars:90 }}" data-title-az="{{ task.t_az|truncatechars:90 }}" data-title-en="{{ task.t_en|truncatechars:90 }}" data-title-ru="{{ task.t_ru|truncatechars:90 }}" data-lang="{{ task.language }}" data-pts="{{ task.points|stringformat:'f' }}">{{ forloop.counter }}. {{ task.t_en|truncatechars:70 }}</option>
             {% endfor %}
           </select>
           <div class="dd" id="dd">
@@ -247,7 +247,7 @@
             <div class="dd-list" id="ddList" hidden></div>
           </div>
 
-          <span class="chip" id="langChip">{% if tasks %}{{ tasks.0.get_language_display }}{% else %}Python{% endif %}</span>
+          <span class="chip">Code language: <b id="langChip">{% if tasks %}{{ tasks.0.get_language_display }}{% else %}Python{% endif %}</b></span>
         </div>
       </section>
       {% endif %}
@@ -258,9 +258,16 @@
         <div class="desc" data-id="{{ task.id }}" hidden>
           <section class="card desc-card">
             <h3 class="dh"><span>Task details</span><small>{{ task.get_language_display }} · TASK {{ forloop.counter }} / {{ tasks|length }} · {{ task.points }} points</small></h3>
+            <div class="ui-language-switch" role="group" aria-label="Problem statement language">
+              <span>Statement:</span>
+              <button type="button" data-ui-lang="en" class="on" aria-pressed="true">EN</button>
+              <button type="button" data-ui-lang="az" aria-pressed="false">AZ</button>
+              <button type="button" data-ui-lang="ru" aria-pressed="false">RU</button>
+            </div>
             <div class="desc-scroll">
-
+              <div class="task-desc" data-l="az" hidden>{{ task.d_az|format_task }}</div>
               <div class="task-desc" data-l="en" hidden>{{ task.d_en|format_task }}</div>
+              <div class="task-desc" data-l="ru" hidden>{{ task.d_ru|format_task }}</div>
 
               {% for t in task.visible_tests %}
                 <div class="samples">
@@ -497,20 +504,23 @@
 
   /* ---------- English task content ---------- */
   let uiLang = 'en';
-  try { uiLang = 'en'; } catch (e) {}
-  uiLang = 'en';
 
   function optTitle(o) {
-    return o.dataset.titleEn || o.dataset.title;
+    const selected = uiLang === 'az' ? o.dataset.titleAz : (uiLang === 'ru' ? o.dataset.titleRu : o.dataset.titleEn);
+    return selected || o.dataset.titleEn || o.dataset.title;
   }
   function applyLang() {
-
-    document.querySelectorAll('.task-desc').forEach(function (d) {
-      d.hidden = d.dataset.l !== uiLang;
-    });
     document.querySelectorAll('.desc').forEach(function (box) {
-      const cur = box.querySelector('.task-desc[data-l="' + uiLang + '"]');
-      if (!cur || !cur.textContent.trim()) box.querySelectorAll('.task-desc').forEach(function (d) { d.hidden = d.dataset.l !== 'en'; });
+      const versions = Array.from(box.querySelectorAll('.task-desc'));
+      let selected = versions.find(function (d) { return d.dataset.l === uiLang && d.textContent.trim(); });
+      if (!selected) selected = versions.find(function (d) { return d.dataset.l === 'en' && d.textContent.trim(); });
+      if (!selected) selected = versions.find(function (d) { return d.dataset.l === 'az' && d.textContent.trim(); });
+      versions.forEach(function (d) { d.hidden = d !== selected; });
+    });
+    document.querySelectorAll('[data-ui-lang]').forEach(function (button) {
+      const active = button.dataset.uiLang === uiLang;
+      button.classList.toggle('on', active);
+      button.setAttribute('aria-pressed', String(active));
     });
     refreshDD();
   }
@@ -724,6 +734,12 @@
 
   /* ---------- Connection ---------- */
   if (select && editor) {
+    document.querySelectorAll('[data-ui-lang]').forEach(function (button) {
+      button.addEventListener('click', function () {
+        uiLang = button.dataset.uiLang;
+        applyLang();
+      });
+    });
     select.addEventListener('change', function () { showTask(select.value); });
     document.getElementById('ddBtn').addEventListener('click', function () { toggleDD(); });
     document.getElementById('ddList').addEventListener('click', function (ev) {

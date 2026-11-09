@@ -155,6 +155,32 @@
   cursor: pointer;
 }
 .mx-password-toggle:hover { background: var(--mx-primary); }
+.ui-language-switch {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 6px;
+  margin: 4px 0 12px;
+  color: var(--mx-text-muted);
+  font-size: 12px;
+}
+.ui-language-switch button {
+  min-width: 38px;
+  padding: 5px 9px;
+  border: 1px solid var(--mx-glass-border);
+  border-radius: 999px;
+  color: var(--mx-text);
+  background: rgb(255 255 255 / 4%);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+.ui-language-switch button.on,
+.ui-language-switch button:hover {
+  color: #fff;
+  border-color: var(--mx-primary);
+  background: var(--mx-primary);
+}
 @media (max-width: 575.98px) {
   .teacher-notice { grid-template-columns: auto minmax(0, 1fr); }
   .teacher-notice__meta { grid-column: 2; }

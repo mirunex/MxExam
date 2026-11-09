@@ -23,7 +23,7 @@ MxExam is a self-hosted exam platform for institutions. Teachers create exams, a
 
 ## Excel programming-task workbook
 
-For the academy-style `Problems` sheet, include these columns: `Name`, `Title`, `Description`, `Score`, `Examples`, `Solution`, and `Test Cases`. `Language` (`python` or `java`) and `Starter Code` are optional; the default language is Python. `Examples` may contain multiple `Input:` / `Output:` pairs. They are public and do not affect scores. The `Test Cases` generator uses the `INPUT ... END` format to create hidden grading cases. Optional translated columns may also be present; the student-facing interface displays the English title and description.
+For the academy-style `Problems` sheet, include `Name`, `Score`, `Examples`, `Solution`, and `Test Cases`. Add a title and description in English using either `Title` / `Description` or `Title EN` / `Description EN`. Optional translation columns are `Title AZ`, `Title RU`, `Description AZ`, and `Description RU`; the student can switch the problem statement between EN, AZ, and RU. `Language` or `Programming Language` may be `python` or `java` and defaults to Python when omitted. `Starter Code` is optional. `Examples` may contain multiple `Input:` / `Output:` pairs. They are public and do not affect scores. The `Test Cases` generator uses the `INPUT ... END` format to create hidden grading cases.
 
 When students run their code, the response contains only public test cases. Hidden tests are evaluated on submission and are never sent to the student’s browser. Teachers can review the full submission history from the exam results page.
 
