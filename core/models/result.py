@@ -7,22 +7,22 @@ class ExamResult(models.Model):
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name="exam_results",
-        verbose_name="Tələbə",
+        verbose_name="Student",
     )
     exam = models.ForeignKey(
         "core.Exam",
         on_delete=models.CASCADE,
         related_name="results",
-        verbose_name="İmtahan",
+        verbose_name="Exam",
     )
-    score = models.IntegerField(verbose_name="Düzgün cavab sayı")
-    total = models.IntegerField(verbose_name="Ümumi sual sayı")
+    score = models.IntegerField(verbose_name="Score")
+    total = models.IntegerField(verbose_name="Total")
     submitted_at = models.DateTimeField(
-        auto_now_add=True, verbose_name="Təhvil verilmə tarixi"
+        auto_now_add=True, verbose_name="Submitted at"
     )
 
     class Meta:
         
         unique_together = ("student", "exam")
-        verbose_name = "İmtahan Nəticəsi"
-        verbose_name_plural = "İmtahan Nəticələri"
+        verbose_name = "Exam result"
+        verbose_name_plural = "Exam results"

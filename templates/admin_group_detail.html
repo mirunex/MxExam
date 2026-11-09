@@ -12,16 +12,16 @@
 
 <div class="top">
   <div>
-    <h1>Qrup: {{ group.name }}</h1>
-    <div style="color:var(--muted)">Müəllim: {{ group.teacher.get_full_name|default:group.teacher.username }} · {{ students|length }} tələbə</div>
+    <h1>Group: {{ group.name }}</h1>
+    <div style="color:var(--muted)">Teacher: {{ group.teacher.get_full_name|default:group.teacher.username }} · {{ students|length }} student</div>
   </div>
-  <a class="btn ghost" href="{% url 'admin_users' %}">← Geri</a>
+  <a class="btn ghost" href="{% url 'admin_users' %}">← Back</a>
 </div>
 
 <div class="panel">
   <div style="overflow-x:auto">
   <table class="utable">
-    <tr><th>#</th><th>Ad Soyad</th><th>İstifadəçi adı</th><th>E-poçt</th><th></th></tr>
+    <tr><th>#</th><th>Full name</th><th>Username</th><th>Email</th><th></th></tr>
     {% for s in students %}
     <tr>
       <td>{{ forloop.counter }}</td>
@@ -30,15 +30,15 @@
       <td>{{ s.email|default:"—" }}</td>
       <td style="text-align:right">
         <form method="post" style="display:inline"
-              onsubmit="return confirm('Bu tələbə qrupdan çıxarılsın? (Hesab silinmir)');">
+              onsubmit="return confirm('Remove this student from the group? (The account will remain.)');">
           {% csrf_token %}
           <input type="hidden" name="student_id" value="{{ s.id }}">
-          <button type="submit" class="rm">Qrupdan çıxar</button>
+          <button type="submit" class="rm">Remove from group</button>
         </form>
       </td>
     </tr>
     {% empty %}
-    <tr><td colspan="5">Bu qrupda hələ tələbə yoxdur. Excel ilə yükləyə bilərsən.</td></tr>
+    <tr><td colspan="5">There are no students in this group yet. You can import them from Excel.</td></tr>
     {% endfor %}
   </table>
   </div>

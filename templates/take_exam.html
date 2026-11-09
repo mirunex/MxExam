@@ -1,10 +1,10 @@
 {% load static %}
 <!DOCTYPE html>
-<html lang="az">
+<html lang="en" data-theme="dark" data-project="mxexam">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>{{ exam.title }} — ExamGuard</title>
+<title>{{ exam.title }} — MxExam</title>
 <style>
   :root{
     --bg:#0f172a; --glass:rgba(255,255,255,.07); --line:rgba(255,255,255,.13);
@@ -67,47 +67,49 @@
     aside.side{position:static}
   }
 </style>
+<link rel="stylesheet" href="{% static 'mirunex/mirunex.css' %}">
+<link rel="stylesheet" href="{% static 'mirunex/themes/mxexam.css' %}">
 </head>
-<body>
+<body class="mx-body">
 <div class="layout">
 
   <aside class="side card">
     <div class="brand">Exam<span>Guard</span></div>
 
-    <div class="lbl">Tələbə</div>
+    <div class="lbl">Student</div>
     <div class="val">{{ request.user.get_full_name|default:request.user.username }}</div>
 
-    <div class="lbl">İmtahan</div>
+    <div class="lbl">Exam</div>
     <div class="val">{{ exam.title }}</div>
 
     <div class="timer" id="timerBox">
-      <small>Qalan vaxt</small>
+      <small>Time remaining</small>
       <b id="timer">--:--</b>
     </div>
 
-    <div class="lbl">Cavablandırılan</div>
+    <div class="lbl">Answered</div>
     <div class="val" id="progressText" style="margin-bottom:0">0 / {{ questions|length }}</div>
     <div class="bar"><div id="progressBar"></div></div>
 
-    <div class="lbl">Suallar</div>
+    <div class="lbl">Questions</div>
     <div class="nav">
       {% for question in questions %}
         <a href="#q{{ question.id }}" id="nav{{ question.id }}">{{ forloop.counter }}</a>
       {% endfor %}
     </div>
 
-    <div class="warn"><span>Xəbərdarlıqlar</span><b id="warnCount">0</b></div>
+    <div class="warn"><span>Warnings</span><b id="warnCount">0</b></div>
 
     {% if questions %}
-      <button type="submit" form="examForm" class="finish">İmtahanı Bitir</button>
+      <button type="submit" form="examForm" class="finish">Finish exam</button>
     {% endif %}
   </aside>
 
   <main>
     <section class="head card">
-      <small>AKTİV İMTAHAN</small>
+      <small>ACTIVE EXAM</small>
       <h1>{{ exam.title }}</h1>
-      <p>{{ exam.description|default:"İmtahan suallarını diqqətlə cavablandırın." }}</p>
+      <p>{{ exam.description|default:"Read each exam question carefully." }}</p>
     </section>
 
     <form id="examForm" method="post" data-total-questions="{{ questions|length }}">
@@ -118,11 +120,11 @@
             <span class="qnum">{{ forloop.counter }}</span>
             <div style="flex:1">
               <h3>{{ question.text }}</h3>
-              <div class="pts">{{ question.points }} bal</div>
+              <div class="pts">{{ question.points }} points</div>
 
               {% if question.question_type == 'written' %}
                 <textarea name="question_{{ question.id }}" data-q="{{ question.id }}"
-                          class="answer-box" rows="7" placeholder="Cavabınızı bura yazın..."></textarea>
+                          class="answer-box" rows="7" placeholder="Type your answer here..."></textarea>
               {% else %}
                 <label class="opt"><input type="radio" name="question_{{ question.id }}" value="A" data-q="{{ question.id }}"><strong>A.</strong> {{ question.option_a }}</label>
                 <label class="opt"><input type="radio" name="question_{{ question.id }}" value="B" data-q="{{ question.id }}"><strong>B.</strong> {{ question.option_b }}</label>
@@ -133,7 +135,7 @@
           </div>
         </section>
       {% empty %}
-        <section class="card empty"><h3>Bu imtahana sual əlavə edilməyib.</h3></section>
+        <section class="card empty"><h3>No questions have been added to this exam.</h3></section>
       {% endfor %}
     </form>
   </main>
@@ -194,7 +196,7 @@
   form.addEventListener('submit', function (e) {
     const answered = countAnswered(false);
     if (answered < total && left > 0) {
-      if (!confirm((total - answered) + ' sual cavabsızdır. Bitirmək istəyirsən?')) {
+      if (!confirm((total - answered) + ' questions are unanswered. Do you want to finish?')) {
         e.preventDefault();
       }
     }

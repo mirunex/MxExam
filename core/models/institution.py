@@ -5,7 +5,7 @@ class Institution(models.Model):
     name = models.CharField(
         max_length=150,
         unique=True,
-        verbose_name="Müəssisə adı",
+        verbose_name="Institution name",
     )
     slug = models.SlugField(
         max_length=80,
@@ -13,16 +13,16 @@ class Institution(models.Model):
         null=True,
         blank=True,
         editable=False,
-        verbose_name='Qısa kod',
+        verbose_name='Short code',
     )
     created_at = models.DateTimeField(
         auto_now_add=True,
-        verbose_name="Yaradılma tarixi",
+        verbose_name="Created at",
     )
 
     class Meta:
-        verbose_name = "Müəssisə"
-        verbose_name_plural = "Müəssisələr"
+        verbose_name = "Institution"
+        verbose_name_plural = "Institutions"
         ordering = ["-created_at"]
 
     def save(self, *args, **kwargs):

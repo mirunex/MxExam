@@ -1,13 +1,15 @@
 {% load static %}
 <!DOCTYPE html>
-<html lang="az">
+<html lang="en" data-theme="dark" data-project="mxexam">
 <head>
     <meta charset="UTF-8">
-    <title>ExamGuard</title>
+    <title>MxExam</title>
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'mirunex/mirunex.css' %}">
+<link rel="stylesheet" href="{% static 'mirunex/themes/mxexam.css' %}">
 </head>
-<body>
-    <h1>ExamGuard-a xoş gəldiniz</h1>
-    <p>Salam, {{ name }}!</p>
+<body class="mx-body">
+    <h1>Welcome to MxExam</h1>
+    <p>Hello, {{ name }}!</p>
 </body>
 </html>

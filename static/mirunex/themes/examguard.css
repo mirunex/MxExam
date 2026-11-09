@@ -1,8 +1,0 @@
-/* ExamGuard üçün Mirunex UI rəngləri */
-[data-project="examguard"] {
-  --mx-primary: #7c3aed;
-  --mx-primary-hover: #8b5cf6;
-  --mx-primary-text: #a78bfa;
-  --mx-primary-subtle: rgb(124 58 237 / 14%);
-  --mx-ring: #a78bfa;
-}

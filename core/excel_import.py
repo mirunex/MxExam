@@ -38,10 +38,10 @@ def parse_students_excel(file, group_names, existing_users, institution_id):
         ws = wb.active
         data = list(ws.iter_rows(values_only=True))
     except Exception:
-        return [], "Excel faylını oxumaq olmadı. .xlsx formatında olduğuna əmin ol."
+        return [], "Could not read the Excel file. Make sure it is an .xlsx file."
 
     if not data:
-        return [], "Fayl boşdur."
+        return [], "The file is empty."
 
     header = [_norm(_clean(c)) for c in data[0]]
     col = {}
@@ -52,9 +52,9 @@ def parse_students_excel(file, group_names, existing_users, institution_id):
                 break
     missing = [k for k in ('first_name', 'last_name', 'username', 'password', 'group') if k not in col]
     if missing:
-        return [], "Başlıq sətrində bu sütunlar tapılmadı: " + ", ".join(
-            {'first_name': 'Ad', 'last_name': 'Soyad', 'username': 'İstifadəçi adı',
-             'password': 'Şifrə', 'group': 'Qrup'}[m] for m in missing)
+        return [], "Missing required columns in the header row: " + ", ".join(
+            {'first_name': 'First name', 'last_name': 'Last name', 'username': 'Username',
+             'password': 'Password', 'group': 'Group'}[m] for m in missing)
 
     rows = []
     seen = set()
@@ -81,20 +81,20 @@ def parse_students_excel(file, group_names, existing_users, institution_id):
         errs = row['errors']
 
         if not row['username']:
-            errs.append("İstifadəçi adı boşdur")
+            errs.append("Username is required")
         elif not USERNAME_RX.match(row['username']):
-            errs.append("İstifadəçi adında boşluq və ya qadağan simvol var")
+            errs.append("Username contains spaces or invalid characters")
         elif row['username'].lower() in seen:
-            errs.append("Bu istifadəçi adı faylda təkrarlanır")
+            errs.append("This username appears more than once in the file")
         seen.add(row['username'].lower())
 
         if not row['first_name'] or not row['last_name']:
-            errs.append("Ad və ya soyad boşdur")
+            errs.append("First and last name are required")
 
         if not row['group']:
-            errs.append("Qrup boşdur")
+            errs.append("Group is required")
         elif _norm(row['group']) not in lower_groups:
-            errs.append(f"'{row['group']}' qrupu tapılmadı (əvvəl Qruplar səhifəsində yarat)")
+            errs.append(f"'{row['group']}' group was not found (create it on the Groups page first)")
         else:
             row['group'] = lower_groups[_norm(row['group'])]
 
@@ -104,13 +104,13 @@ def parse_students_excel(file, group_names, existing_users, institution_id):
             if role == 'student' and inst == institution_id:
                 row['action'] = 'add'      # yeni hesab yox, yalnız qrupa əlavə
             else:
-                errs.append("Bu istifadəçi adı artıq başqa hesaba məxsusdur")
+                errs.append("This username is already used by another account")
         else:
             if len(row['password']) < 6:
-                errs.append("Şifrə ən azı 6 simvol olmalıdır")
+                errs.append("Password must be at least 6 characters")
 
         rows.append(row)
 
     if not rows:
-        return [], "Faylda tələbə sətri tapılmadı."
+        return [], "No student rows were found in the file."
     return rows, None

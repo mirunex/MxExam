@@ -11,6 +11,10 @@
   if (!form) return;
   const csrf = form.querySelector('[name=csrfmiddlewaretoken]').value;
   const url = "{% url 'exam_violation' exam.id %}";
+  const presenceUrl = "{% url 'exam_presence' exam.id %}";
+  async function heartbeat() { try { await fetch(presenceUrl, { method: 'POST', headers: { 'X-CSRFToken': csrf, 'X-Requested-With': 'XMLHttpRequest' } }); } catch (e) {} }
+  heartbeat();
+  setInterval(heartbeat, 15000);
   const toast = document.getElementById('pg-toast');
   const warnEl = document.getElementById('warnCount');
   const startedAt = Date.now();
@@ -46,21 +50,21 @@
 
     if (data.removed) {
       removed = true;
-      show('Xəbərdarlıq limiti aşıldı. İmtahan sonlandırılır...', 'bad', 0);
+      show('Warning limit reached. The exam is ending...', 'bad', 0);
       setTimeout(function () { form.submit(); }, 2500);
     } else {
-      show('Xəbərdarlıq ' + data.count + '/' + data.max + ': ' + text, 'warn', 5000);
+      show('Warning ' + data.count + '/' + data.max + ': ' + text, 'warn', 5000);
     }
   }
 
   document.addEventListener('visibilitychange', function () {
-    if (document.hidden) report('tab_hidden', 'Başqa tabə keçdin');
+    if (document.hidden) report('tab_hidden', 'Switched to another tab');
   });
   window.addEventListener('blur', function () {
-    report('window_blur', 'İmtahan pəncərəsindən çıxdın');
+    report('window_blur', 'Left the exam window');
   });
   document.addEventListener('paste', function () {
-    report('paste', 'Yapışdırma (paste) aşkarlandı');
+    report('paste', 'Paste detected');
   });
   
 })();

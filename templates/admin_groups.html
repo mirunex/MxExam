@@ -1,5 +1,5 @@
 {% extends "admin_base.html" %}
-{% block title %}Qruplar{% endblock %}
+{% block title %}Groups{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -71,17 +71,17 @@
 {% block content %}
 <div class="top">
     <div>
-        <p class="kicker">Qrup idarəetməsi</p>
-        <h1>Qruplar</h1>
+        <p class="kicker">Group management</p>
+        <h1>Groups</h1>
         <p class="sub">
-            Qrup yarat və onu müəssisənin müəllimlərindən birinə təyin et.
+            Create a group and assign it to one of the institution’s teachers.
         </p>
     </div>
 </div>
 
 <div class="groups-layout">
     <div class="panel">
-        <h2 style="margin-top:0;">Yeni qrup</h2>
+        <h2 style="margin-top:0;">New group</h2>
 
         <form method="post">
             {% csrf_token %}
@@ -103,20 +103,20 @@
             </div>
 
             <button class="btn" type="submit">
-                ＋ Qrupu yarat
+                ＋ Create group
             </button>
         </form>
     </div>
 
     <div class="panel">
-        <h2 style="margin-top:0;">Mövcud qruplar</h2>
+        <h2 style="margin-top:0;">Existing groups</h2>
 
         <table class="groups-table">
             <thead>
                 <tr>
-                    <th>Qrup</th>
-                    <th>Müəllim</th>
-                    <th>Tələbə sayı</th>
+                    <th>Group</th>
+                    <th>Teacher</th>
+                    <th>Student count</th>
                 </tr>
             </thead>
 
@@ -132,7 +132,7 @@
                 {% empty %}
                 <tr>
                     <td colspan="3" class="empty">
-                        Hələ qrup yaradılmayıb.
+                        No groups have been created yet.
                     </td>
                 </tr>
                 {% endfor %}

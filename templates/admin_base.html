@@ -1,24 +1,25 @@
+{% load static %}
 <!DOCTYPE html>
-<html lang="az">
+<html lang="en" data-theme="dark" data-project="mxexam">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>{% block title %}Admin paneli{% endblock %} · ExamGuard</title>
+<title>{% block title %}Admin paneli{% endblock %} · MxExam</title>
 
 <style>
-:root{
-    --bg:#f4f7f5;
-    --card:#ffffff;
-    --text:#17211d;
-    --muted:#6d7b74;
-    --line:#e2e9e5;
-    --sidebar:#123328;
-    --sidebar-hover:#1d4a3a;
-    --green:#17875d;
-    --green-dark:#0d6242;
-    --mint:#dff5e9;
-    --gold:#e9b949;
-    --danger:#c94848;
+:root {
+    --bg: var(--mx-bg);
+    --card: var(--mx-glass-bg);
+    --text: var(--mx-text);
+    --muted: var(--mx-text-muted);
+    --line: var(--mx-glass-border);
+    --sidebar: var(--mx-ink-900);
+    --sidebar-hover: var(--mx-primary-subtle);
+    --green: var(--mx-primary);
+    --green-dark: var(--mx-primary-hover);
+    --mint: var(--mx-primary-subtle);
+    --gold: var(--mx-violet-300);
+    --danger: var(--mx-danger);
 }
 
 *{box-sizing:border-box}
@@ -254,16 +255,57 @@ label{
 
     main{padding:24px 16px}
 }
+aside {
+    border-right: 1px solid var(--mx-glass-border);
+}
+
+.stat,
+.panel {
+    background-color: var(--mx-glass-bg);
+    background-image: linear-gradient(
+        180deg,
+        var(--mx-glass-sheen),
+        transparent 55%
+    );
+    backdrop-filter: blur(var(--mx-glass-blur));
+    -webkit-backdrop-filter: blur(var(--mx-glass-blur));
+    border-color: var(--mx-glass-border);
+    box-shadow: var(--mx-glass-shadow);
+}
+
+.brand-mark {
+    background: var(--mx-primary);
+    color: #fff;
+}
+
+nav a.on {
+    color: var(--mx-violet-200);
+}
+main {
+    display: flex;
+    flex-direction: column;
+}
+
+.mx-footer {
+    margin-top: auto;
+}
+main .mx-footer {
+    justify-content: flex-start;
+    gap: 4px;
+}
 </style>
 
 {% block extra_css %}{% endblock %}
+
+<link rel="stylesheet" href="{% static 'mirunex/mirunex.css' %}">
+<link rel="stylesheet" href="{% static 'mirunex/themes/mxexam.css' %}">
 </head>
 
-<body>
+<body class="mx-body">
 <aside>
     <div class="brand">
         <div class="brand-mark">E</div>
-        <span>ExamGuard</span>
+        <span>MxExam</span>
     </div>
 
     <div class="role">
@@ -274,19 +316,19 @@ label{
     <nav>
         <a class="{% if current == 'admin_dashboard' %}on{% endif %}"
            href="{% url 'admin_dashboard' %}">
-            ◫ İdarə paneli
+            ◫ Dashboard
         </a>
 
         <a class="{% if current == 'teacher_create' %}on{% endif %}"
            href="{% url 'teacher_create' %}">
-            ＋ Yeni müəllim
+            ＋ New teacher
         </a>
-        <a href="{% url 'student_create' %}" class="{% if current == 'student_create' %}on{% endif %}">＋ Yeni tələbə</a>
-        <a href="{% url 'student_import' %}" class="{% if current == 'student_import' %}on{% endif %}">Excel ilə tələbə</a>
-        <a href="{% url 'admin_users' %}" class="{% if current == 'admin_users' %}on{% endif %}">Müəllim və qruplar</a>
+        <a href="{% url 'student_create' %}" class="{% if current == 'student_create' %}on{% endif %}">＋ New student</a>
+        <a href="{% url 'student_import' %}" class="{% if current == 'student_import' %}on{% endif %}">Import students from Excel</a>
+        <a href="{% url 'admin_users' %}" class="{% if current == 'admin_users' %}on{% endif %}">Teachers and groups</a>
         <a class="{% if current == 'admin_groups' %}on{% endif %}"
    href="{% url 'admin_groups' %}">
-    ◉ Qruplar
+    ◉ Groups
 </a>
     </nav>
     {% endwith %}
@@ -297,7 +339,7 @@ label{
 
         <form method="post" action="{% url 'logout' %}">
             {% csrf_token %}
-            <button type="submit" class="out">Çıxış et →</button>
+            <button type="submit" class="out">Log out →</button>
         </form>
     </div>
 </aside>
@@ -310,6 +352,12 @@ label{
     {% endfor %}
 
     {% block content %}{% endblock %}
+    <footer class="mx-footer">
+    <span>© {% now "Y" %} MxExam · by</span>
+    <a href="https://mirunex.com" target="_blank" rel="noopener">
+        Mirunex team
+    </a>
+</footer>
 </main>
 
 {% block extra_js %}{% endblock %}

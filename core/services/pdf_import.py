@@ -36,7 +36,7 @@ def parse_test_questions(text):
             current_q['correct_option'] = clean_line.split(":")[1].strip().upper()
 
             if not all([current_q['option_a'], current_q['option_b'], current_q['option_c'], current_q['option_d']]):
-                errors.append(f"Sual {number}: bəzi variantı çatışmır")
+                errors.append(f"Sual {number}: one or more answer options are missing")
             else:
                 questions.append(current_q)
 
@@ -60,7 +60,7 @@ def parse_written_questions(text):
             points = float(m.group(1).replace(',', '.'))
             body = body[:m.start()].strip()
         if not body:
-            errors.append(f"Sual {q['number']}: mətn boşdur")
+            errors.append(f"Sual {q['number']}: the question text is empty")
             return
         questions.append({'text': body, 'points': points})
 
@@ -78,5 +78,5 @@ def parse_written_questions(text):
     finish(current)
 
     if not questions and not errors:
-        errors.append("Heç bir sual tapılmadı. Format: '1. Sualın mətni (5 bal)'")
+        errors.append("No questions were found. Expected format: '1. Question text (5 points)'")
     return questions, errors

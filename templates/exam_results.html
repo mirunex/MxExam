@@ -1,52 +1,7 @@
 {% extends 'teacher_base.html' %}
-{% block title %}Nəticələr{% endblock %}
-
+{% block title %}Exam results{% endblock %}
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h4 class="fw-bold mb-0">📊 {{ exam.title }}: nəticələr</h4>
-    <a href="{% url 'teacher_dashboard' %}" class="btn btn-outline-light rounded-pill px-4">← İmtahanlar</a>
-</div>
-
-<div class="glass-panel p-4">
-    {% if results %}
-    <div class="table-responsive">
-        <table class="table table-dark table-borderless align-middle mb-0" style="--bs-table-bg: transparent;">
-            <thead>
-                <tr class="text-white-50 small">
-                    <th>#</th>
-                    <th>Tələbə</th>
-                    <th>Bal</th>
-                    <th>Faiz</th>
-                    <th>Təhvil vaxtı</th>
-                    <th></th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for r in results %}
-                <tr>
-                    <td>{{ forloop.counter }}</td>
-                    <td class="fw-semibold">{{ r.student.get_full_name|default:r.student.username }}</td>
-                    <td>{{ r.score }} / {{ r.total }}</td>
-                    <td>{% widthratio r.score r.total 100 %}%</td>
-                    <td>{{ r.submitted_at|date:"d.m.Y H:i" }}</td>
-                    <td class="text-end">
-                        <a href="{% url 'grade_written' exam.id r.student.id %}"
-                           class="btn btn-sm btn-outline-light rounded-pill">Yoxla</a>
-
-                        <form method="post" action="{% url 'reset_result' exam.id r.student.id %}"
-                              class="d-inline"
-                              onsubmit="return confirm('Bu tələbənin nəticəsi və cavabları silinəcək, imtahana yenidən girə biləcək. Davam edək?');">
-                            {% csrf_token %}
-                            <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill">Sıfırla</button>
-                        </form>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-    {% else %}
-        <p class="text-white-50 text-center py-5 mb-0">Hələ heç kim təhvil verməyib.</p>
-    {% endif %}
-</div>
-{% endblock %}
+<div class="d-flex justify-content-between align-items-center mb-4"><div><h4 class="fw-bold mb-1">{{ exam.title }}: Results</h4><p class="text-white-50 mb-0">All assigned students · live status and exam activity</p></div><a href="{% url 'teacher_dashboard' %}" class="btn btn-outline-light rounded-pill px-4">← Exams</a></div>
+<div class="glass-panel p-4"><div class="table-responsive"><table class="table table-dark table-borderless align-middle mb-0" style="--bs-table-bg:transparent"><thead><tr class="text-white-50 small"><th>#</th><th>Student</th><th>Status</th><th>Started</th><th>Last login</th><th>Warnings</th><th>Code submissions</th><th>Score</th><th>Submitted</th><th></th></tr></thead><tbody>
+{% for student in results %}<tr><td>{{ forloop.counter }}</td><td class="fw-semibold">{{ student.get_full_name|default:student.username }}</td><td>{% if student.is_online %}<span class="text-success">● Online</span>{% elif student.exam_session %}<span class="text-white-50">Offline</span>{% else %}<span class="text-white-50">Not started</span>{% endif %}</td><td>{{ student.exam_session.started_at|date:"M d, Y H:i"|default:"—" }}</td><td>{{ student.last_login|date:"M d, Y H:i"|default:"—" }}</td><td>{{ student.violation_count }}</td><td>{{ student.submission_count }}</td><td>{% if student.exam_result %}{{ student.exam_result.score }} / {{ student.exam_result.total }}{% else %}—{% endif %}</td><td>{{ student.exam_result.submitted_at|date:"M d, Y H:i"|default:"—" }}</td><td class="text-end text-nowrap"><a href="{% url 'teacher_student_detail' exam.id student.id %}" class="btn btn-sm btn-outline-light rounded-pill">Details</a>{% if student.exam_result %}<form method="post" action="{% url 'reset_result' exam.id student.id %}" class="d-inline" onsubmit="return confirm('Reset this student’s exam result and allow them to retake the exam?');">{% csrf_token %}<button class="btn btn-sm btn-outline-danger rounded-pill">Reset</button></form> <a href="{% url 'grade_written' exam.id student.id %}" class="btn btn-sm btn-outline-light rounded-pill">Review</a>{% endif %}</td></tr>{% empty %}<tr><td colspan="10" class="text-center text-white-50 py-5">No students are assigned to this exam.</td></tr>{% endfor %}
+</tbody></table></div></div>{% endblock %}

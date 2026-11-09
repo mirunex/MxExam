@@ -5,12 +5,12 @@ from django.core.exceptions import ValidationError
 class Question(models.Model):
     QUESTION_TYPES = (
         ('test', 'Test (A-D)'),
-        ('written', 'Yazılı'),
-        ('code', 'Proqramlaşdırma (Kod)'),
+        ('written', 'Written'),
+        ('code', 'Programming (Code)'),
     )
     
-    text = models.TextField(verbose_name="Sualın mətni")
-    points = models.FloatField(default=1.0, verbose_name="Sualın maks balı")
+    text = models.TextField(verbose_name="Question text")
+    points = models.FloatField(default=1.0, verbose_name="Maximum points")
     question_type = models.CharField(max_length=20, choices=QUESTION_TYPES, default='test')
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True, related_name='questions')
     exam = models.ForeignKey('core.Exam', on_delete=models.CASCADE, related_name='questions', null=True, blank=True)
@@ -19,7 +19,7 @@ class Question(models.Model):
     option_b = models.CharField(max_length=255, blank=True, null=True)
     option_c = models.CharField(max_length=255, blank=True, null=True)
     option_d = models.CharField(max_length=255, blank=True, null=True)
-    correct_option = models.CharField(max_length=1, blank=True, null=True, help_text="A, B, C və ya D")
+    correct_option = models.CharField(max_length=1, blank=True, null=True, help_text="A, B, C, or D")
 
     def __str__(self):
         return f"[{self.get_question_type_display()}] {self.text[:30]}..."
@@ -42,6 +42,6 @@ class Question(models.Model):
         if self.question_type == 'test':
             options = [self.option_a, self.option_b, self.option_c, self.option_d]
             if not all(options):
-                raise ValidationError("Test tipli suallar üçün bütün variantlar (A, B, C, D) doldurulmalıdır.")
+                raise ValidationError("All options (A, B, C, D) are required for multiple-choice questions.")
             if not self.correct_option or self.correct_option.strip().upper() not in ['A', 'B', 'C', 'D']:
-                raise ValidationError("Düzgün cavab yalnız A, B, C və ya D ola bilər.")
+                raise ValidationError("The correct answer must be A, B, C, or D.")

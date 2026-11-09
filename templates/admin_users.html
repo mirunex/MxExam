@@ -1,5 +1,5 @@
 {% extends "admin_base.html" %}
-{% block title %}Müəllim və qruplar{% endblock %}
+{% block title %}Teachers and groups{% endblock %}
 
 {% block content %}
 <style>
@@ -20,39 +20,39 @@
 </style>
 
 <div class="top">
-  <h1>Müəllim və qruplar</h1>
+  <h1>Teachers and groups</h1>
   <div>
-    <a class="btn" href="{% url 'teacher_create' %}">＋ Müəllim</a>
-    <a class="btn ghost" href="/admin-panel/groups/">Qrup yarat</a>
-    <a class="btn ghost" href="{% url 'student_import' %}">Excel ilə tələbə</a>
+    <a class="btn" href="{% url 'teacher_create' %}">＋ Teacher</a>
+    <a class="btn ghost" href="/admin-panel/groups/">Create group</a>
+    <a class="btn ghost" href="{% url 'student_import' %}">Import students from Excel</a>
   </div>
 </div>
 
 <div class="panel" style="margin-bottom:20px">
-  <h2 class="sec">Qruplar ({{ groups|length }})</h2>
+  <h2 class="sec">Groups ({{ groups|length }})</h2>
 
   {% if no_group_count %}
-    <div class="note">Qrupu olmayan {{ no_group_count }} tələbə var. Onlar imtahanları görməyəcək.</div>
+    <div class="note">{{ no_group_count }} students have no group and will not see exams.</div>
   {% endif %}
 
   <div class="gcards">
     {% for g in groups %}
       <a class="gcard" href="{% url 'admin_group_detail' g.id %}">
         <b>{{ g.name }}</b>
-        <small>Müəllim: {{ g.teacher.get_full_name|default:g.teacher.username }}</small>
-        <div class="cnt">{{ g.student_count }} tələbə →</div>
+        <small>Teacher: {{ g.teacher.get_full_name|default:g.teacher.username }}</small>
+        <div class="cnt">{{ g.student_count }} students →</div>
       </a>
     {% empty %}
-      <div>Hələ qrup yoxdur.</div>
+      <div>There are no groups yet.</div>
     {% endfor %}
   </div>
 </div>
 
 <div class="panel">
-  <h2 class="sec">Müəllimlər ({{ teachers|length }})</h2>
+  <h2 class="sec">Teachers ({{ teachers|length }})</h2>
   <div style="overflow-x:auto">
   <table class="utable">
-    <tr><th>Ad Soyad</th><th>İstifadəçi adı</th><th>E-poçt</th><th>Qruplar</th></tr>
+    <tr><th>Full name</th><th>Username</th><th>Email</th><th>Groups</th></tr>
     {% for u in teachers %}
     <tr>
       <td>{{ u.get_full_name|default:"—" }}</td>
@@ -61,7 +61,7 @@
       <td>{% for g in u.teacher_groups.all %}<span class="chip">{{ g.name }}</span>{% empty %}—{% endfor %}</td>
     </tr>
     {% empty %}
-    <tr><td colspan="4">Hələ müəllim yoxdur.</td></tr>
+    <tr><td colspan="4">There are no teachers yet.</td></tr>
     {% endfor %}
   </table>
   </div>

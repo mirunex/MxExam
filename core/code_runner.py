@@ -61,7 +61,7 @@ def _run_python(code, input_data):
                 encoding="utf-8", timeout=TIME_LIMIT, cwd=tmp,
             )
         except subprocess.TimeoutExpired:
-            return "", "Vaxt limiti aşıldı"
+            return "", "Time limit exceeded"
     return r.stdout.strip(), r.stderr.strip()
 
 
@@ -86,13 +86,13 @@ def _run_java(code, input_data):
                 encoding="utf-8", timeout=JAVA_TIME_LIMIT, cwd=tmp,
             )
         except subprocess.TimeoutExpired:
-            return "", "Vaxt limiti aşıldı"
+            return "", "Time limit exceeded"
         except FileNotFoundError:
-            return "", "Serverdə Java tapılmadı"
+            return "", "Java is not installed on the server"
         # Java xəbərdarlıqları stderr-ə düşür; yalnız uğursuz çıxışı xəta say
         err = _clean_java_error(r.stderr, tmp) if r.returncode != 0 else ""
         if r.returncode != 0 and not err:
-            err = f"Proqram {r.returncode} kodu ilə bitdi"
+            err = f"Program exited with code {r.returncode}"
     return r.stdout.strip(), err
 
 
@@ -111,11 +111,9 @@ def run_python(code, input_data=""):
 def check_task(task, code):
     """Gizli testləri yoxlayır. (keçən, ümumi) qaytarır.
 
-    Nümunə (görünən) test balda nəzərə alınmır; gizli test yoxdursa hamısı sayılır.
+    Yalnız gizli testlər bal verir; görünən nümunələr heç vaxt bal qazandırmır.
     """
     tests = list(task.test_cases.filter(is_hidden=True).order_by('id'))
-    if not tests:
-        tests = list(task.test_cases.order_by('id'))
     language = getattr(task, 'language', 'python')
     passed = 0
     for t in tests:
@@ -135,4 +133,4 @@ def run_generator(code):
         import json
         return json.loads(out.splitlines()[-1]), ""
     except Exception:
-        return [], "Generator `tests` siyahısı qaytarmadı"
+        return [], "The generator did not return a `tests` list"

@@ -1,8 +1,8 @@
 {% extends "superadmin_base.html" %}
-{% block title %}Admin yarat{% endblock %}
+{% block title %}Create administrator{% endblock %}
 
 {% block content %}
-<div class="top"><h1>Admin yarat: {{ institution.name }}</h1></div>
+<div class="top"><h1>Create administrator: {{ institution.name }}</h1></div>
 
 <div class="panel" style="max-width:520px">
   <form method="post">
@@ -14,8 +14,8 @@
         {% for e in field.errors %}<div class="err">{{ e }}</div>{% endfor %}
       </div>
     {% endfor %}
-    <button class="btn" type="submit">Yarat</button>
-    <a class="btn ghost" href="{% url 'superadmin_dashboard' %}">Ləğv et</a>
+    <button class="btn" type="submit">Create</button>
+    <a class="btn ghost" href="{% url 'superadmin_dashboard' %}">Cancel</a>
   </form>
 </div>
 {% endblock %}

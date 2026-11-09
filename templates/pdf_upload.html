@@ -1,11 +1,14 @@
+{% load static %}
 <!DOCTYPE html>
-<html lang="az">
+<html lang="en" data-theme="dark" data-project="mxexam">
 <head>
     <meta charset="UTF-8">
-    <title>İmtahana PDF yüklə</title>
+    <title>Upload exam PDF</title>
+    <link rel="stylesheet" href="{% static 'mirunex/mirunex.css' %}">
+<link rel="stylesheet" href="{% static 'mirunex/themes/mxexam.css' %}">
 </head>
-<body>
-    <h1>{{ exam.title }} — PDF sual yüklə</h1>
+<body class="mx-body">
+    <h1>{{ exam.title }} — Upload questions from PDF</h1>
 
     <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
@@ -13,6 +16,6 @@
         <button type="submit">PDF-i oxu</button>
     </form>
 
-    <a href="{% url 'teacher_dashboard' %}">Müəllim panelinə qayıt</a>
+    <a href="{% url 'teacher_dashboard' %}">Back to teacher dashboard</a>
 </body>
 </html>

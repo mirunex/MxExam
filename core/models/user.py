@@ -5,7 +5,7 @@ from django.db import models
 class User(AbstractUser):
     role = models.CharField(
         max_length=20,
-        choices=[("student", "Tələbə"), ("teacher", "Müəllim"), ("admin", "Admin"), ("superadmin", "Super Admin")],
+        choices=[("student", "Student"), ("teacher", "Teacher"), ("admin", "Admin"), ("superadmin", "Super Admin")],
         default="student",
     )
     institution = models.ForeignKey(
@@ -14,7 +14,7 @@ class User(AbstractUser):
     null=True,
     blank=True,
     related_name="users",
-    verbose_name="Müəssisə",
+    verbose_name="Institution",
 )
     def is_teacher(self):
         return self.role == 'teacher'

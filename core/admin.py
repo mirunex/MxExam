@@ -10,13 +10,13 @@ class CustomUserAdmin(UserAdmin):
     list_display = ('username', 'email', 'role', 'is_staff', 'is_superuser')
     list_filter = ('role', 'is_staff', 'is_superuser')
     fieldsets = UserAdmin.fieldsets + (
-        ('Rol Məlumatı', {'fields': ('role',)}),
+        ('Role information', {'fields': ('role',)}),
     )
     add_fieldsets = UserAdmin.add_fieldsets + (
-        ('Rol Məlumatı', {'fields': ('role',)}),
+        ('Role information', {'fields': ('role',)}),
     )
 
-# Yeni modellərin qeydiyyatı
+# Register additional models
 @admin.register(Question)
 class QuestionAdmin(admin.ModelAdmin):
     list_display = ('text', 'question_type', 'points')

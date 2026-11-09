@@ -1,10 +1,10 @@
 {% load static %}
 <!DOCTYPE html>
-<html lang="az">
+<html lang="en" data-theme="dark" data-project="mxexam">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Giriş — ExamGuard</title>
+    <title>Sign in — MxExam</title>
     <link rel="icon" type="image/x-icon" href="{% static 'favicon.ico' %}">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
@@ -19,7 +19,7 @@
             padding: 20px;
         }
 
-        /* Glassmorphic Login Kartı */
+        /* Login card */
         .login-card {
             background: rgba(255, 255, 255, 0.07);
             backdrop-filter: blur(16px);
@@ -40,7 +40,7 @@
             text-align: center;
         }
 
-        /* Input Sahələri */
+        /* Input fields */
         .form-control {
             background: rgba(255, 255, 255, 0.08) !important;
             border: 1px solid rgba(255, 255, 255, 0.2) !important;
@@ -61,7 +61,7 @@
             color: rgba(255, 255, 255, 0.4) !important;
         }
 
-        /* Düymə Stili */
+        /* Button style */
         .btn-glass-gradient {
             background: linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%);
             border: 1px solid rgba(255, 255, 255, 0.2);
@@ -78,8 +78,10 @@
             color: white;
         }
     </style>
+    <link rel="stylesheet" href="{% static 'mirunex/mirunex.css' %}">
+<link rel="stylesheet" href="{% static 'mirunex/themes/mxexam.css' %}">
 </head>
-<body>
+<body class="mx-body">
     <div class="login-card">
         <div class="login-header">
             <h3 class="fw-bold mb-1 text-white" style="letter-spacing: 0.5px;">
@@ -97,14 +99,14 @@
             <form method="post">
                 {% csrf_token %}
                 <div class="mb-3">
-                    <label class="form-label fw-semibold text-white-50 small">İstifadəçi adı</label>
-                    <input type="text" name="username" class="form-control" placeholder="İstifadəçi adınızı daxil edin" required autofocus>
+                    <label class="form-label fw-semibold text-white-50 small">Username</label>
+                    <input type="text" name="username" class="form-control" placeholder="Enter your username" required autofocus>
                 </div>
                 <div class="mb-4">
-                    <label class="form-label fw-semibold text-white-50 small">Şifrə</label>
+                    <label class="form-label fw-semibold text-white-50 small">Password</label>
                     <input type="password" name="password" class="form-control" placeholder="••••••••" required>
                 </div>
-                <button type="submit" class="btn btn-glass-gradient w-100 py-2.5">Daxil ol</button>
+                <button type="submit" class="btn btn-glass-gradient w-100 py-2.5">Sign in</button>
             </form>
         </div>
     </div>

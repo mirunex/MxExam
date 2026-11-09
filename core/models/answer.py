@@ -5,15 +5,15 @@ User = get_user_model()
 
 
 class Answer(models.Model):
-    student = models.ForeignKey(User, on_delete=models.CASCADE, related_name='answers', verbose_name="Tələbə")
+    student = models.ForeignKey(User, on_delete=models.CASCADE, related_name='answers', verbose_name="Student")
     question = models.ForeignKey('core.Question', on_delete=models.CASCADE, related_name='answers', verbose_name="Sual")
 
     # Test sualı üçün
-    selected_option = models.CharField(max_length=1, blank=True, default="", verbose_name="Seçilmiş variant")
+    selected_option = models.CharField(max_length=1, blank=True, default="", verbose_name="Selected option")
 
     # Yazılı sual üçün
-    text_answer = models.TextField(blank=True, default="", verbose_name="Yazılı cavab")
-    awarded_points = models.FloatField(null=True, blank=True, verbose_name="Verilən bal")
+    text_answer = models.TextField(blank=True, default="", verbose_name="Written answer")
+    awarded_points = models.FloatField(null=True, blank=True, verbose_name="Awarded points")
     # None = müəllim hələ yoxlamayıb
 
     class Meta:

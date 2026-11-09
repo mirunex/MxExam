@@ -1,10 +1,10 @@
 {% load static %}
 <!DOCTYPE html>
-<html lang="az">
+<html lang="en" data-theme="dark" data-project="mxexam">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Müəllim Paneli{% endblock %} — ExamGuard</title>
+<title>{% block title %}Teacher dashboard{% endblock %} — MxExam</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body {
@@ -54,47 +54,68 @@
             text-align: center;
         }
         .btn-glass-gradient:hover { color: #fff; transform: translateY(-2px); }
+    main {
+    display: flex;
+    flex-direction: column;
+}
+
+.mx-footer {
+    margin-top: auto;
+}
+main .mx-footer {
+    justify-content: flex-start;
+    gap: 4px;
+}
     </style>
     {% block extra_head %}{% endblock %}
+    <link rel="stylesheet" href="{% static 'mirunex/mirunex.css' %}">
+<link rel="stylesheet" href="{% static 'mirunex/themes/mxexam.css' %}">
 </head>
-<body>
+<body class="mx-body">
 <div class="container-fluid">
     <div class="row">
         <aside class="col-12 col-md-3 col-lg-2 sidebar p-3 d-flex flex-column">
-            <div class="fw-bold fs-5 mb-1">ExamGuard</div>
-            <div class="text-white-50 small mb-4">{{ request.user.username }} · Müəllim</div>
+            <div class="fw-bold fs-5 mb-1">MxExam</div>
+            <div class="text-white-50 small mb-4">{{ request.user.username }} · Teacher</div>
 
             {% with current=request.resolver_match.url_name %}
             <nav class="nav flex-column">
                 <a class="nav-link {% if current == 'teacher_dashboard' %}active{% endif %}"
-                   href="{% url 'teacher_dashboard' %}">📋 İmtahanlar</a>
+                   href="{% url 'teacher_dashboard' %}">📋 Exams</a>
                 <a class="nav-link {% if current == 'create_exam' %}active{% endif %}"
-                   href="{% url 'create_exam' %}">➕ Yeni imtahan</a>
+                   href="{% url 'create_exam' %}">➕ New exam</a>
                 <a class="nav-link {% if current == 'teacher_groups' %}active{% endif %}"
-                   href="{% url 'teacher_groups' %}">👥 Qruplar</a>
-                <a href="{% url 'teacher_live' %}">Canlı izləmə</a>
+                   href="{% url 'teacher_groups' %}">👥 Groups</a>
+                <a href="{% url 'teacher_live' %}">Live monitoring</a>
 
             </nav>
             {% endwith %}
 
             <form action="{% url 'logout' %}" method="post" class="mt-auto pt-4">
                 {% csrf_token %}
-                <button type="submit" class="btn btn-sm btn-outline-light rounded-pill w-100">Çıxış et</button>
+                <button type="submit" class="btn btn-sm btn-outline-light rounded-pill w-100">Log out</button>
             </form>
         </aside>
 
         <main class="col-12 col-md-9 col-lg-10 p-4">
             {% if messages %}
                 {% for message in messages %}
-                    <div class="alert alert-{{ message.tags }} bg-opacity-25 border text-white">{{ message }}</div>
+                    <div class="alert alert-{{ message.tags }} border">{{ message }}</div>
                 {% endfor %}
             {% endif %}
 
             {% block content %}{% endblock %}
+            <footer class="mx-footer">
+    <span>© {% now "Y" %} MxExam · by</span>
+    <a href="https://mirunex.com" target="_blank" rel="noopener">
+        Mirunex team
+    </a>
+</footer>
         </main>
     </div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 {% block extra_js %}{% endblock %}
 </body>
+
 </html>

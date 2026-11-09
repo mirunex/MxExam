@@ -1,5 +1,5 @@
 """
-Django settings for examguard project.
+Django settings for MxExam project.
 """
 
 import os
@@ -7,8 +7,8 @@ from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Serverdə (PythonAnywhere) WSGI faylında EXAMGUARD_PROD=1 təyin olunacaq
-PROD = os.environ.get('EXAMGUARD_PROD') == '1'
+# Set MXEXAM_PROD=1 in the production environment.
+PROD = os.environ.get('MXEXAM_PROD') == '1'
 
 SECRET_KEY = os.environ.get(
     'DJANGO_SECRET_KEY',
@@ -17,8 +17,16 @@ SECRET_KEY = os.environ.get(
 
 DEBUG = not PROD
 
-ALLOWED_HOSTS = ['examguard.pythonanywhere.com', 'localhost', '127.0.0.1']
-CSRF_TRUSTED_ORIGINS = ['https://examguard.pythonanywhere.com']
+ALLOWED_HOSTS = [
+    host.strip()
+    for host in os.environ.get('DJANGO_ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
+    if host.strip()
+]
+CSRF_TRUSTED_ORIGINS = [
+    origin.strip()
+    for origin in os.environ.get('DJANGO_CSRF_TRUSTED_ORIGINS', '').split(',')
+    if origin.strip()
+]
 
 
 # Application definition
@@ -44,7 +52,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'examguard.urls'
+ROOT_URLCONF = 'mxexam.urls'
 
 TEMPLATES = [
     {
@@ -61,7 +69,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'examguard.wsgi.application'
+WSGI_APPLICATION = 'mxexam.wsgi.application'
 
 
 # Database

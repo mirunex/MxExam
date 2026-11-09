@@ -36,11 +36,13 @@ urlpatterns = [
     path('student/exam/<int:exam_id>/', views.start_exam_view, name='start_exam'),
     path('teacher/exams/new/', views.create_exam_view, name='create_exam'),
     path('teacher/exams/<int:exam_id>/results/', views.exam_results_view, name='exam_results'),
+    path('teacher/exams/<int:exam_id>/students/<int:student_id>/', views.teacher_student_detail_view, name='teacher_student_detail'),
     path('teacher/exams/<int:exam_id>/grade/<int:student_id>/', views.grade_written_view, name='grade_written'),
     path('student/exam/<int:exam_id>/run/', views.run_code_view, name='run_code'),
     path('student/exam/<int:exam_id>/submit-task/', views.submit_task_view, name='submit_task'),
     path('teacher/exams/<int:exam_id>/reset/<int:student_id>/', views.reset_result_view, name='reset_result'),
     path('student/exam/<int:exam_id>/violation/', views.exam_violation_view, name='exam_violation'),
+    path('student/exam/<int:exam_id>/presence/', views.exam_presence_view, name='exam_presence'),
     path('teacher/live/', views.teacher_live_view, name='teacher_live'),
     path('teacher/live/feed/', views.teacher_live_feed_view, name='teacher_live_feed'),
 ]

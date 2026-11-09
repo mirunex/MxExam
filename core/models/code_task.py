@@ -9,17 +9,17 @@ class CodeTask(models.Model):
         "core.Exam", on_delete=models.CASCADE, related_name="code_tasks"
     )
     language = models.CharField(
-        max_length=10, choices=LANGUAGES, default='python', verbose_name="Dil"
+        max_length=10, choices=LANGUAGES, default='python', verbose_name="Language"
     )
-    title = models.CharField(max_length=150, verbose_name="Başlıq")
-    title_en = models.CharField(max_length=150, blank=True, verbose_name="Başlıq (en)")
-    title_ru = models.CharField(max_length=150, blank=True, verbose_name="Başlıq (ru)")
-    description = models.TextField(verbose_name="Tapşırığın mətni")
-    description_en = models.TextField(blank=True, verbose_name="Tapşırığın mətni (en)")
-    description_ru = models.TextField(blank=True, verbose_name="Tapşırığın mətni (ru)")
-    starter_code = models.TextField(blank=True, verbose_name="Başlanğıc kod")
-    reference_code = models.TextField(blank=True, verbose_name="Etalon kod (müəllimin həlli)")
-    points = models.FloatField(default=10.0, verbose_name="Maks bal")
+    title = models.CharField(max_length=150, verbose_name="Title")
+    title_en = models.CharField(max_length=150, blank=True, verbose_name="Title (English)")
+    title_ru = models.CharField(max_length=150, blank=True, verbose_name="Title (Russian)")
+    description = models.TextField(verbose_name="Task description")
+    description_en = models.TextField(blank=True, verbose_name="Task description (English)")
+    description_ru = models.TextField(blank=True, verbose_name="Task description (Russian)")
+    starter_code = models.TextField(blank=True, verbose_name="Starter code")
+    reference_code = models.TextField(blank=True, verbose_name="Reference solution")
+    points = models.FloatField(default=10.0, verbose_name="Maximum score")
 
     def __str__(self):
         return self.title
@@ -38,9 +38,9 @@ class CodeTestCase(models.Model):
     task = models.ForeignKey(
         CodeTask, on_delete=models.CASCADE, related_name="test_cases"
     )
-    input_data = models.TextField(blank=True, verbose_name="Giriş")
-    expected_output = models.TextField(verbose_name="Gözlənilən çıxış")
-    is_hidden = models.BooleanField(default=False, verbose_name="Gizli test")
+    input_data = models.TextField(blank=True, verbose_name="Input")
+    expected_output = models.TextField(verbose_name="Expected output")
+    is_hidden = models.BooleanField(default=False, verbose_name="Hidden test")
 
     def __str__(self):
         return f"{self.task.title} testi"
@@ -58,3 +58,17 @@ class CodeSubmission(models.Model):
 
     class Meta:
         unique_together = ("student", "task")
+
+class CodeSubmissionAttempt(models.Model):
+    student = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="code_submission_attempts")
+    task = models.ForeignKey(CodeTask, on_delete=models.CASCADE, related_name="submission_attempts")
+    code = models.TextField(blank=True)
+    passed = models.IntegerField(default=0)
+    total = models.IntegerField(default=0)
+    score = models.FloatField(default=0.0)
+    submitted_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["submitted_at"]
+        verbose_name = "Code submission attempt"
+        verbose_name_plural = "Code submission attempts"

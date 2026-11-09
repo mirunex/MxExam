@@ -1,11 +1,11 @@
 {% extends 'superadmin_base.html' %}
-{% block title %}Yeni müəssisə{% endblock %}
+{% block title %}New institution{% endblock %}
 
 {% block content %}
 <div class="top">
     <div>
-        <h1>Yeni müəssisə</h1>
-        <p class="sub">Müəssisəni əlavə et, sonra ona admin təyin edəcəyik.</p>
+        <h1>New institution</h1>
+        <p class="sub">Add an institution, then assign an administrator.</p>
     </div>
 </div>
 
@@ -20,8 +20,8 @@
             {% endfor %}
         </div>
         <div style="display:flex;gap:10px">
-            <button type="submit" class="btn">Yarat</button>
-            <a class="btn ghost" href="{% url 'superadmin_dashboard' %}">Ləğv et</a>
+            <button type="submit" class="btn">Create</button>
+            <a class="btn ghost" href="{% url 'superadmin_dashboard' %}">Cancel</a>
         </div>
     </form>
 </div>

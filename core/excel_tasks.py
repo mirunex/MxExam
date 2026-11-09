@@ -1,5 +1,6 @@
 """Tapşırıq bankı Excel-dən oxunur (şablon: tapsiriq_sablon.xlsx)."""
 from openpyxl import load_workbook
+import re
 
 HARNESS = "#HARNESS\n"
 MAX_TESTS = 12
@@ -30,7 +31,7 @@ def parse_tasks_excel(file):
     try:
         wb = load_workbook(file, data_only=True, read_only=True)
     except Exception:
-        return [], ["Excel faylını oxumaq olmadı (.xlsx olmalıdır)."]
+        return [], ["Could not read the Excel file (it must be .xlsx)."]
 
     if 'Problems' in wb.sheetnames:          # akademiya formatı (Problems / Students vərəqləri)
         return _parse_academy(wb['Problems'])
@@ -38,7 +39,7 @@ def parse_tasks_excel(file):
     ws = wb['Tapşırıqlar'] if 'Tapşırıqlar' in wb.sheetnames else wb.worksheets[0]
     rows = list(ws.iter_rows(values_only=True))
     if not rows:
-        return [], ["Fayl boşdur."]
+        return [], ["The file is empty."]
 
     col = {}
     for i, h in enumerate(rows[0]):
@@ -46,7 +47,7 @@ def parse_tasks_excel(file):
 
     def need(name):
         if _norm(name) not in col:
-            errors.append(f"Sütun tapılmadı: '{name}'")
+            errors.append(f"Column not found: '{name}'")
 
     for name in ("Dil", "Bal", "Növ", "Başlıq (az)", "Təsvir (az)", "Düzgün kod", "Nümunə giriş"):
         need(name)
@@ -62,34 +63,34 @@ def parse_tasks_excel(file):
         if not any(c not in (None, '') for c in row):
             continue
         err_before = len(errors)
-        pref = f"Sətir {n}"
+        pref = f"Row {n}"
 
         lang = _s(get(row, "Dil")).strip().lower()
         if lang not in ('python', 'java'):
-            errors.append(f"{pref}: Dil 'python' və ya 'java' olmalıdır.")
+            errors.append(f"{pref}: Language must be 'python' or 'java'.")
         kind = _s(get(row, "Növ")).strip().lower()
         if kind not in ('stdin', 'sinif'):
-            errors.append(f"{pref}: Növ 'stdin' və ya 'sinif' olmalıdır.")
+            errors.append(f"{pref}: Type must be 'stdin' or 'class'.")
         if kind == 'sinif' and lang == 'java':
-            errors.append(f"{pref}: Java üçün yalnız 'stdin' növü dəstəklənir.")
+            errors.append(f"{pref}: Only 'stdin' tasks are supported for Java.")
 
         try:
             points = float(_s(get(row, "Bal")).replace(',', '.'))
             if points <= 0:
                 raise ValueError
         except ValueError:
-            errors.append(f"{pref}: Bal müsbət ədəd olmalıdır.")
+            errors.append(f"{pref}: Bal must be a positive number.")
             points = 0
 
         title = _s(get(row, "Başlıq (az)")).strip()
         desc = _nl(get(row, "Təsvir (az)"))
         ref = _nl(get(row, "Düzgün kod"))
         if not title:
-            errors.append(f"{pref}: Başlıq (az) boşdur.")
+            errors.append(f"{pref}: Title is required.")
         if not desc:
-            errors.append(f"{pref}: Təsvir (az) boşdur.")
+            errors.append(f"{pref}: Description is required.")
         if not ref:
-            errors.append(f"{pref}: Düzgün kod boşdur.")
+            errors.append(f"{pref}: Reference solution is required.")
 
         sample = _nl(get(row, "Nümunə giriş"))
         sample_out = _nl(get(row, "Nümunə çıxış (ixtiyari)"))
@@ -98,7 +99,7 @@ def parse_tasks_excel(file):
         generator = _nl(get(row, "Giriş generatoru (ixtiyari)"))
 
         if sample == '' and kind == 'sinif':
-            errors.append(f"{pref}: Sinif tapşırığında 'Nümunə giriş' (test kodu) boş ola bilməz.")
+            errors.append(f"{pref}: The sample input (test harness) is required for class-based tasks.")
 
         entries = [(sample, sample_out or None, False)]
         for hi, ho in zip(hidden_in, hidden_out):
@@ -107,7 +108,7 @@ def parse_tasks_excel(file):
                 continue
             entries.append((hi, ho or None, True))
         if len(entries) < 2 and not generator:
-            errors.append(f"{pref}: Ən azı bir gizli test və ya generator lazımdır.")
+            errors.append(f"{pref}: Add at least one hidden test or a test generator.")
 
         if kind == 'sinif':
             entries = [((e[0] if e[0].startswith(HARNESS) else HARNESS + e[0] + "\n"), e[1], e[2])
@@ -134,7 +135,7 @@ def parse_tasks_excel(file):
         })
 
     if not tasks and not errors:
-        errors.append("Heç bir tapşırıq tapılmadı.")
+        errors.append("No tasks were found.")
     return tasks, errors
 
 
@@ -162,15 +163,29 @@ def _with_examples(desc, examples, lang):
     return desc + "\n\n## " + title + "\n" + ex
 
 
-def _first_example(examples):
-    """Examples sütunundan ilk (giriş, çıxış) cütünü çıxarır."""
-    t = examples.replace('```', '')
-    if 'Input:' not in t or 'Output:' not in t:
-        return None
-    a = t.split('Input:', 1)[1]
-    inp, out = a.split('Output:', 1)
-    out = out.split('Input:')[0]
-    return inp.strip('\n'), out.strip('\n')
+def _all_examples(examples):
+    """Examples sütunundan bütün public (giriş, çıxış) cütlərini çıxarır."""
+    text = examples.replace('```', '').strip()
+    if not text or 'Input:' not in text or 'Output:' not in text:
+        return []
+
+    # Prefer the documented multiline format where each label has its own line.
+    blocks = re.split(r'(?im)^[ \t]*Input:[ \t]*$', text)
+    pairs = []
+    for block in blocks:
+        parts = re.split(r'(?im)^[ \t]*Output:[ \t]*$', block, maxsplit=1)
+        if len(parts) == 2:
+            pairs.append((parts[0].strip('\r\n'), parts[1].strip('\r\n')))
+    if pairs:
+        return pairs
+
+    # Keep accepting older inline labels such as "Input: 1 Output: 2".
+    for block in text.split('Input:')[1:]:
+        if 'Output:' not in block:
+            continue
+        inp, out = block.split('Output:', 1)
+        pairs.append((inp.strip('\r\n '), out.split('Input:', 1)[0].strip('\r\n ')))
+    return pairs
 
 
 def _academy_generator(code):
@@ -191,7 +206,6 @@ def _academy_generator(code):
         "        if _cur is not None:\n"
         "            _all.append(_cur)\n"
         "        _cur = None\n"
-        "        break\n"
         "    elif _cur is not None:\n"
         "        _cur.append(_ln)\n"
         "tests = ['\\n'.join(c) + '\\n' for c in _all]\n"
@@ -201,14 +215,14 @@ def _academy_generator(code):
 def _parse_academy(ws):
     rows = list(ws.iter_rows(values_only=True))
     if len(rows) < 2:
-        return [], ["Problems vərəqi boşdur."]
+        return [], ["The Problems sheet is empty."]
     col = {}
     for i, h in enumerate(rows[0]):
         col.setdefault(_norm(h), i)
     errors = []
     for name in ("Title", "Description", "Score", "Solution", "Test Cases"):
         if _norm(name) not in col:
-            errors.append(f"Sütun tapılmadı: '{name}'")
+            errors.append(f"Column not found: '{name}'")
     if errors:
         return [], errors
 
@@ -220,10 +234,14 @@ def _parse_academy(ws):
     for n, row in enumerate(rows[1:], start=2):
         if not any(c not in (None, '') for c in row):
             continue
-        pref = f"Sətir {n}"
+        pref = f"Row {n}"
         title_en = _s(get(row, "Title")).strip()
         title_az = _s(get(row, "Title AZ")).strip() or title_en
         title_ru = _s(get(row, "Title RU")).strip()
+        language = _s(get(row, "Language")).strip().lower() or 'python'
+        if language not in ('python', 'java'):
+            errors.append(f"{pref}: Language must be 'python' or 'java'.")
+            continue
         d_en = _norm_desc(get(row, "Description"))
         d_az = _norm_desc(get(row, "Description AZ")) or d_en
         d_ru = _norm_desc(get(row, "Description RU"))
@@ -235,23 +253,22 @@ def _parse_academy(ws):
             if points <= 0:
                 raise ValueError
         except ValueError:
-            errors.append(f"{pref}: Score müsbət ədəd olmalıdır.")
+            errors.append(f"{pref}: Score must be a positive number.")
             continue
         if not title_en or not d_en or not ref or not gen:
-            errors.append(f"{pref}: Title, Description, Solution və Test Cases boş ola bilməz.")
+            errors.append(f"{pref}: Title, Description, Solution, and Test Cases are required.")
             continue
-        ex = _first_example(examples)
-        entries = [(ex[0], ex[1], False)] if ex else []
+        entries = [(inp, out, False) for inp, out in _all_examples(examples)]
         tasks.append({
             'number': _s(get(row, "Name")).strip() or str(len(tasks) + 1),
-            'language': 'python', 'kind': 'stdin',
+            'language': language, 'kind': 'stdin',
             'title': title_az[:150], 'title_en': title_en[:150], 'title_ru': title_ru[:150],
             'description': _with_examples(d_az, examples, 'az'),
             'description_en': _with_examples(d_en, examples, 'en'),
             'description_ru': _with_examples(d_ru, examples, 'ru'),
-            'starter_code': '', 'reference_code': ref, 'points': points,
+            'starter_code': _nl(get(row, "Starter Code")), 'reference_code': ref, 'points': points,
             'entries': entries, 'generator': _academy_generator(gen),
         })
     if not tasks and not errors:
-        errors.append("Heç bir tapşırıq tapılmadı.")
+        errors.append("No tasks were found.")
     return tasks, errors

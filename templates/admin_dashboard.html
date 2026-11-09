@@ -1,5 +1,5 @@
 {% extends "admin_base.html" %}
-{% block title %}İdarə paneli{% endblock %}
+{% block title %}Dashboard{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -71,20 +71,20 @@
 {% block content %}
 <div class="top">
     <div>
-        <p class="kicker">Müəssisə idarəetməsi</p>
+        <p class="kicker">Institution management</p>
         <h1>{{ institution.name }}</h1>
-        <p class="sub">Müəllim və tələbə hesablarını buradan idarə et.</p>
+        <p class="sub">Manage teacher and student accounts here.</p>
     </div>
 
     <a class="btn" href="{% url 'teacher_create' %}">
-        ＋ Yeni müəllim
+        ＋ New teacher
     </a>
 </div>
 
 <div class="stats">
     <div class="stat">
         <div class="stat-top">
-            <small>Müəllimlər</small>
+            <small>Teachers</small>
             <div class="stat-icon">◉</div>
         </div>
         <b>{{ teacher_count }}</b>
@@ -92,7 +92,7 @@
 
     <div class="stat">
         <div class="stat-top">
-            <small>Tələbələr</small>
+            <small>Students</small>
             <div class="stat-icon">◌</div>
         </div>
         <b>{{ student_count }}</b>
@@ -101,12 +101,12 @@
 
 <div class="panel info-panel">
     <div>
-        <h2>Növbəti addım</h2>
-        <p>Müəllim hesabı yaradaraq onun imtahan və qrup idarəetməsinə başlamasını təmin et.</p>
+        <h2>Next step</h2>
+        <p>Create a teacher account so they can manage exams and groups.</p>
     </div>
 
     <a class="btn" href="{% url 'teacher_create' %}">
-        Müəllim yarat
+        Create teacher
     </a>
 </div>
 {% endblock %}

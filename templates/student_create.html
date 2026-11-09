@@ -1,8 +1,8 @@
 {% extends "admin_base.html" %}
-{% block title %}Yeni tələbə{% endblock %}
+{% block title %}New student{% endblock %}
 
 {% block content %}
-<div class="top"><h1>Yeni tələbə</h1></div>
+<div class="top"><h1>New student</h1></div>
 
 <div class="panel" style="max-width:520px">
   <form method="post">
@@ -14,8 +14,8 @@
         {% for e in field.errors %}<div class="err">{{ e }}</div>{% endfor %}
       </div>
     {% endfor %}
-    <button class="btn" type="submit">Yarat</button>
-    <a class="btn ghost" href="{% url 'admin_dashboard' %}">Ləğv et</a>
+    <button class="btn" type="submit">Create</button>
+    <a class="btn ghost" href="{% url 'admin_dashboard' %}">Cancel</a>
   </form>
 </div>
 {% endblock %}

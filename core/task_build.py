@@ -18,19 +18,19 @@ def build_tests(index, task):
         if out is None:
             out, err = run_code(task['reference_code'], inp, lang)
             if err:
-                errors.append(f"Tapşırıq {index}: etalon kod xəta verdi: {err[:150]}")
+                errors.append(f"Tapşırıq {index}: reference solution failed: {err[:150]}")
                 return errors
         tests.append((inp, out.strip(), hidden))
 
     if task.get('generator'):
         generated, err = run_generator(task['generator'])
         if err:
-            errors.append(f"Tapşırıq {index}: generator xəta verdi: {err[:150]}")
+            errors.append(f"Tapşırıq {index}: test generator failed: {err[:150]}")
             return errors
         for inp in generated[:MAX_GENERATED]:
             out, err = run_code(task['reference_code'], inp, lang)
             if err:
-                errors.append(f"Tapşırıq {index}: etalon kod generator girişində xəta verdi: {err[:150]}")
+                errors.append(f"Tapşırıq {index}: reference solution failed on generated input: {err[:150]}")
                 return errors
             tests.append((inp, out, True))
 

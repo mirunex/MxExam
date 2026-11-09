@@ -13,16 +13,16 @@ class InstitutionForm(forms.ModelForm):
             'name': forms.TextInput(
                 attrs={
                     'class': 'form-control',
-                    'placeholder': 'Müəssisənin adı',
+                    'placeholder': 'Institution name',
                 }
             ),
         }
         labels = {
-            'name': 'Müəssisə adı',
+            'name': 'Institution name',
         }
         error_messages = {
             'name': {
-            'unique': 'Bu adla müəssisə artıq mövcuddur.',
+            'unique': 'An institution with this name already exists.',
         }
 }
 
@@ -33,10 +33,10 @@ class InstitutionAdminForm(forms.ModelForm):
         widget=forms.PasswordInput(
             attrs={
                 'class': 'form-control',
-                'placeholder': 'Şifrə',
+                'placeholder': 'Password',
             }
         ),
-        label='Şifrə',
+        label='Password',
     )
 
     class Meta:
@@ -44,7 +44,7 @@ class InstitutionAdminForm(forms.ModelForm):
         fields = ['username', 'first_name', 'last_name', 'email', 'password']
         widgets = {
             'username': forms.TextInput(
-                attrs={'class': 'form-control', 'placeholder': 'İstifadəçi adı'}
+                attrs={'class': 'form-control', 'placeholder': 'Username'}
             ),
             'first_name': forms.TextInput(
                 attrs={'class': 'form-control', 'placeholder': 'Ad'}
@@ -55,15 +55,15 @@ class InstitutionAdminForm(forms.ModelForm):
             'email': forms.EmailInput(
                 attrs={
                     'class': 'form-control',
-                    'placeholder': 'E-poçt ünvanı',
+                    'placeholder': 'Email address',
                 }
             ),
         }
         labels = {
-            'username': 'İstifadəçi adı',
+            'username': 'Username',
             'first_name': 'Ad',
             'last_name': 'Soyad',
-            'email': 'E-poçt',
+            'email': 'Email',
         }
 
     def save(self, commit=True):
@@ -77,10 +77,10 @@ class TeacherForm(forms.ModelForm):
         widget=forms.PasswordInput(
             attrs={
                 'class': 'form-control',
-                'placeholder': 'Şifrə',
+                'placeholder': 'Password',
             }
         ),
-        label='Şifrə',
+        label='Password',
     )
 
     class Meta:
@@ -88,7 +88,7 @@ class TeacherForm(forms.ModelForm):
         fields = ['username', 'first_name', 'last_name', 'email', 'password']
         widgets = {
             'username': forms.TextInput(
-                attrs={'class': 'form-control', 'placeholder': 'İstifadəçi adı'}
+                attrs={'class': 'form-control', 'placeholder': 'Username'}
             ),
             'first_name': forms.TextInput(
                 attrs={'class': 'form-control', 'placeholder': 'Ad'}
@@ -99,15 +99,15 @@ class TeacherForm(forms.ModelForm):
             'email': forms.EmailInput(
                 attrs={
                     'class': 'form-control',
-                    'placeholder': 'E-poçt ünvanı',
+                    'placeholder': 'Email address',
                 }
             ),
         }
         labels = {
-            'username': 'İstifadəçi adı',
+            'username': 'Username',
             'first_name': 'Ad',
             'last_name': 'Soyad',
-            'email': 'E-poçt',
+            'email': 'Email',
         }
 
     def save(self, commit=True):
@@ -119,26 +119,49 @@ class TeacherForm(forms.ModelForm):
 class StudentForm(TeacherForm):
     pass
 class ExamForm(forms.ModelForm):
+    start_time = forms.DateTimeField(
+    required=True,
+    input_formats=["%Y-%m-%dT%H:%M"],
+    widget=forms.DateTimeInput(
+        attrs={"class": "form-control", "type": "text", "autocomplete": "off"},
+        format="%Y-%m-%dT%H:%M",
+    ),
+)
+
+    end_time = forms.DateTimeField(
+    required=True,
+    input_formats=["%Y-%m-%dT%H:%M"],
+    widget=forms.DateTimeInput(
+        attrs={"class": "form-control", "type": "text", "autocomplete": "off"},
+        format="%Y-%m-%dT%H:%M",
+    ),
+)
     class Meta:
         model = Exam
         fields = [
-            'title', 
-            'description', 
-            'duration_minutes', 
-            'max_warnings', 
-            'questions_per_student', 
-            'start_time', 
-            'groups',
-            'exam_type',
-            'allow_reentry',
-        ]
+    'title',
+    'description',
+    'max_warnings',
+    'questions_per_student',
+    'start_time',
+    'end_time',
+    'groups',
+    'exam_type',
+    'allow_reentry',
+]
         widgets = {
-            'title': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'İmtahan Adı'}),
-            'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Açıqlama'}),
-            'duration_minutes': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Müddət (dəqiqə)'}),
-            'max_warnings': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Maksimum xəbərdarlıq sayı'}),
+            'title': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Exam title'}),
+            'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Description'}),
+            'max_warnings': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Maximum warning count'}),
             'questions_per_student': forms.NumberInput(attrs={'class': 'form-control'}),
-            'start_time': forms.DateTimeInput(attrs={'class': 'form-control', 'type': 'datetime-local'}, format='%Y-%m-%dT%H:%M'),
+            'start_time': forms.DateTimeInput(
+    attrs={'class': 'form-control', 'type': 'text', 'autocomplete': 'off'},
+    format='%Y-%m-%dT%H:%M',
+),
+            'end_time': forms.DateTimeInput(
+    attrs={'class': 'form-control', 'type': 'text', 'autocomplete': 'off'},
+    format='%Y-%m-%dT%H:%M',
+),
             'groups': forms.CheckboxSelectMultiple(),
             'exam_type': forms.Select(attrs={'class': 'form-select'}),
         }
@@ -151,13 +174,21 @@ class ExamForm(forms.ModelForm):
     def clean_duration_minutes(self):
         duration = self.cleaned_data.get('duration_minutes')
         if duration is not None and duration <= 0:
-            raise forms.ValidationError("İmtahan müddəti 0-dan böyük olmalıdır.")
+            raise forms.ValidationError("Exam duration must be greater than zero.")
         return duration
+    def clean(self):
+        cleaned_data = super().clean()
+        start_time = cleaned_data.get('start_time')
+        end_time = cleaned_data.get('end_time')
 
+        if start_time and end_time and end_time <= start_time:
+            self.add_error('end_time', 'The end time must be later than the start time.')
+
+        return cleaned_data
     def clean_max_warnings(self):
         warnings = self.cleaned_data.get('max_warnings')
         if warnings is not None and warnings < 0:
-            raise forms.ValidationError("Xəbərdarlıq sayı mənfi ola bilməz.")
+            raise forms.ValidationError("Warning count cannot be negative.")
         return warnings
 
 
@@ -173,7 +204,7 @@ class QuestionForm(forms.ModelForm):
             'option_b': forms.TextInput(attrs={'class': 'form-control'}),
             'option_c': forms.TextInput(attrs={'class': 'form-control'}),
             'option_d': forms.TextInput(attrs={'class': 'form-control'}),
-            'correct_option': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'A, B, C və ya D'}),
+            'correct_option': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'A, B, C, or D'}),
             
 
         }
@@ -183,7 +214,7 @@ class GroupForm(forms.ModelForm):
         model = Group
         fields = ['name']
         widgets = {
-            'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Məs: 2445a'}),
+            'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Example: 2445a'}),
         }
 
 class AdminGroupForm(forms.ModelForm):
@@ -194,7 +225,7 @@ class AdminGroupForm(forms.ModelForm):
             'name': forms.TextInput(
                 attrs={
                     'class': 'form-control',
-                    'placeholder': 'Məs: 2445a',
+                    'placeholder': 'Example: 2445a',
                 }
             ),
             'teacher': forms.Select(
@@ -202,8 +233,8 @@ class AdminGroupForm(forms.ModelForm):
             ),
         }
         labels = {
-            'name': 'Qrupun adı',
-            'teacher': 'Müəllim',
+            'name': 'Group name',
+            'teacher': 'Teacher',
         }
 
     def __init__(self, *args, institution=None, **kwargs):
@@ -217,7 +248,7 @@ class AdminGroupForm(forms.ModelForm):
 
 class PDFUploadForm(forms.Form):
     pdf_file = forms.FileField(
-        label="Sual faylı (PDF və ya Excel)",
+        label="Question file (PDF or Excel)",
         widget=forms.ClearableFileInput(attrs={'accept': '.pdf,.xlsx'}),
     )
 
@@ -226,9 +257,9 @@ class PDFUploadForm(forms.Form):
         name = file.name.lower()
 
         if not (name.endswith(".pdf") or name.endswith(".xlsx")):
-            raise ValidationError("Yalnız PDF və ya Excel (.xlsx) faylı yükləmək olar.")
+            raise ValidationError("Only PDF or Excel (.xlsx) files are allowed.")
 
         if file.size > 10 * 1024 * 1024:
-            raise ValidationError("Fayl 10 MB-dan böyük olmamalıdır.")
+            raise ValidationError("The file must not exceed 10 MB.")
 
         return file

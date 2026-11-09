@@ -11,7 +11,7 @@ class Group(models.Model):
         related_name='groups',
         null=True,
         blank=True,
-        verbose_name='Müəssisə',
+        verbose_name='Institution',
     )
 
     teacher = models.ForeignKey(

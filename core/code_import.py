@@ -15,10 +15,10 @@ def parse_code_tasks(text):
         desc = "\n".join(t['desc']).strip()
         code = "\n".join(t['code']).strip("\n")
         if not desc:
-            errors.append(f"Tapşırıq {t['number']}: mətn boşdur")
+            errors.append(f"Task {t['number']}: description is empty")
             return
         if not code.strip():
-            errors.append(f"Tapşırıq {t['number']}: 'Kod:' hissəsi boşdur")
+            errors.append(f"Task {t['number']}: the 'Code:' section is empty")
             return
         points = 10.0
         m = re.search(r'\(\s*(\d+(?:[.,]\d+)?)\s*bal\s*\)\s*$', desc, re.IGNORECASE)
@@ -91,5 +91,5 @@ def parse_code_tasks(text):
     finish(cur)
 
     if not tasks and not errors:
-        errors.append("Heç bir tapşırıq tapılmadı. Format: '1. Mətn (10 bal)', 'Kod:', 'Giriş: ...'")
+        errors.append("No tasks were found. Expected format: '1. Description (10 points)', 'Code:', 'Input: ...'")
     return tasks, errors

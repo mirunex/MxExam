@@ -3,7 +3,7 @@ from django.db import models
 
 
 class ExamEvent(models.Model):
-    KINDS = (('run', 'Nümunə yoxlama'), ('submit_task', 'Tapşırıq təhvili'))
+    KINDS = (('run', 'Run tests'), ('submit_task', 'Task submission'))
 
     student = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="exam_events"

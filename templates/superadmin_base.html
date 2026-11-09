@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="az">
+<html lang="en" data-theme="dark" data-project="mxexam">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>{% block title %}Superadmin{% endblock %} · ExamGuard</title>
+<title>{% block title %}Superadmin{% endblock %} · MxExam</title>
 
 <style>
 :root{
@@ -254,16 +254,28 @@ label{
 
     main{padding:24px 16px}
 }
+main {
+    display: flex;
+    flex-direction: column;
+}
+
+.mx-footer {
+    margin-top: auto;
+}
+main .mx-footer {
+    justify-content: flex-start;
+    gap: 4px;
+}
 </style>
 
 {% block extra_css %}{% endblock %}
 </head>
 
-<body>
+<body class="mx-body">
 <aside>
     <div class="brand">
         <div class="brand-mark">E</div>
-        <span>ExamGuard</span>
+        <span>MxExam</span>
     </div>
 
     <div class="role">Superadmin</div>
@@ -272,12 +284,12 @@ label{
     <nav>
         <a class="{% if current == 'superadmin_dashboard' %}on{% endif %}"
            href="{% url 'superadmin_dashboard' %}">
-            ◫ İdarə paneli
+            ◫ Dashboard
         </a>
 
         <a class="{% if current == 'institution_create' %}on{% endif %}"
            href="{% url 'institution_create' %}">
-            ＋ Yeni müəssisə
+            ＋ New institution
         </a>
     </nav>
     {% endwith %}
@@ -288,7 +300,7 @@ label{
 
         <form action="{% url 'logout' %}" method="post">
             {% csrf_token %}
-            <button type="submit" class="out">Çıxış et →</button>
+            <button type="submit" class="out">Log out →</button>
         </form>
     </div>
 </aside>
@@ -299,6 +311,12 @@ label{
     {% endfor %}
 
     {% block content %}{% endblock %}
+    <footer class="mx-footer">
+    <span>© {% now "Y" %} MxExam · by</span>
+    <a href="https://mirunex.com" target="_blank" rel="noopener">
+        Mirunex team
+    </a>
+</footer>
 </main>
 
 {% block extra_js %}{% endblock %}

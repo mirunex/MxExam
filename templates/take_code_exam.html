@@ -1,10 +1,11 @@
 {% load task_format %}
+{% load static %}
 <!DOCTYPE html>
-<html lang="az">
+<html lang="en" data-theme="dark" data-project="mxexam">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>{{ exam.title }} — ExamGuard</title>
+<title>{{ exam.title }} — MxExam</title>
 <style>
   :root{
     --bg:#0f172a; --glass:rgba(255,255,255,.07); --line:rgba(255,255,255,.13);
@@ -126,7 +127,7 @@
   .btn:disabled{opacity:.5;cursor:wait}
   .btn:hover:not(:disabled){transform:translateY(-2px)}
 
-  /* Əsas hissə */
+  /* Main section */
   select{width:100%;padding:12px 14px;border-radius:12px;font:inherit;font-weight:600;color:#fff;margin-bottom:16px;
          background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.2);cursor:pointer}
   select option{color:#111}
@@ -144,7 +145,7 @@
   .samples{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}
   .box{padding:10px 12px;border-radius:10px;background:rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.12)}
 
-  /* Redaktor: rəngləmə üçün üst-üstə iki qat */
+  /* Editor syntax highlighting layers */
   .editor-wrap{display:flex;min-height:400px;border-radius:14px;overflow:hidden;
                background:rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.18)}
   .editor-wrap:focus-within{border-color:#c084fc}
@@ -167,10 +168,8 @@
   #results{margin-top:16px}
   .res{padding:12px 14px;border-radius:12px;margin-bottom:10px;background:rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.15)}
   .res.ok{border-color:var(--ok)} .res.bad{border-color:var(--bad)}
-  .res h4{margin:0 0 8px;font-size:14px}
+  .res h4{margin:0;font-size:14px}
   .res.ok h4{color:var(--ok)} .res.bad h4{color:var(--bad)}
-  .res .cols{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
-  .res .err{color:var(--bad)}
   .info{color:var(--mut);font-size:14px}
   .actions{display:flex;gap:12px;justify-content:space-between;align-items:center;flex-wrap:wrap;margin-top:18px}
   .hint{color:var(--mut);font-size:13px;margin-left:8px}
@@ -179,11 +178,13 @@
     .layout{grid-template-columns:1fr}
     aside.side{position:static;max-height:none}
     .desc{position:static}
-    .samples,.res .cols{grid-template-columns:1fr}
+    .samples{grid-template-columns:1fr}
   }
 </style>
+<link rel="stylesheet" href="{% static 'mirunex/mirunex.css' %}">
+<link rel="stylesheet" href="{% static 'mirunex/themes/mxexam.css' %}">
 </head>
-<body>
+<body class="mx-body">
 <form id="examForm" method="post">
   {% csrf_token %}
   <div class="page">
@@ -196,25 +197,25 @@
 
   <div class="layout">
 
-    <!-- SOL SÜTUN -->
+    <!-- LEFT SIDEBAR -->
     <aside class="side">
       <section class="card pnl">
-        <h3>İmtahan <button type="submit" class="btn finish">İmtahanı bitir</button></h3>
-        <div class="row"><span class="k">Ad</span><span class="v">{{ exam.title }}</span></div>
-        <div class="row"><span class="k">Maksimum bal</span><span class="v" id="maxScore">0</span></div>
-        <div class="row timer-row" id="timerBox"><span class="k">Qalan vaxt</span><b id="timer">--:--</b></div>
+        <h3>Exam <button type="submit" class="btn finish">Finish exam</button></h3>
+        <div class="row"><span class="k">Name</span><span class="v">{{ exam.title }}</span></div>
+        <div class="row"><span class="k">Maximum score</span><span class="v" id="maxScore">0</span></div>
+        <div class="row timer-row" id="timerBox"><span class="k">Time remaining</span><b id="timer">--:--</b></div>
       </section>
 
       <section class="card pnl">
-        <h3>Tələbə məlumatı</h3>
-        <div class="row"><span class="k">Ad</span><span class="v">{{ request.user.get_full_name|default:request.user.username }}</span></div>
-        <div class="row ok"><span class="k">Bal</span><span><b id="totalScore">0</b> / <span id="maxScore2">0</span></span></div>
-        <div class="row ok"><span class="k">Həll olunmuş</span><b id="solvedCount">0 / {{ tasks|length }}</b></div>
-        <div class="row warnrow"><span class="k">Xəbərdarlıqlar</span><b id="warnCount">0</b></div>
+        <h3>Student information</h3>
+        <div class="row"><span class="k">Name</span><span class="v">{{ request.user.get_full_name|default:request.user.username }}</span></div>
+        <div class="row ok"><span class="k">Score</span><span><b id="totalScore">0</b> / <span id="maxScore2">0</span></span></div>
+        <div class="row ok"><span class="k">Solved</span><b id="solvedCount">0 / {{ tasks|length }}</b></div>
+        <div class="row warnrow"><span class="k">Warnings</span><b id="warnCount">0</b></div>
       </section>
 
       <section class="card pnl">
-        <h3>Bildirişlər</h3>
+        <h3>Notifications</h3>
         <ul class="notes" id="notes"></ul>
       </section>
 
@@ -223,33 +224,29 @@
           <li class="st-item" id="st{{ task.id }}" data-id="{{ task.id }}"
               data-points="{{ task.points|stringformat:'f' }}"
               data-score="{% if task.sub %}{{ task.sub.score|stringformat:'f' }}{% endif %}">
-            <span>{{ forloop.counter }}. {{ task.title|truncatechars:30 }}</span>
+            <span>{{ forloop.counter }}. {{ task.t_en|truncatechars:30 }}</span>
             <span class="badge">—</span>
           </li>
         {% endfor %}
       </ul>
     </aside>
 
-    <!-- SAĞ SÜTUN -->
+    <!-- MAIN CONTENT -->
     <main>
       {% if tasks %}
       <section class="card pnl" style="position:relative;z-index:60">
-        <h3>Həll ediləcək tapşırığı seç</h3>
+        <h3>Select a task to solve</h3>
         <div class="selrow">
           <select id="taskSelect">
             {% for task in tasks %}
-              <option value="{{ task.id }}" data-title="{{ task.title|truncatechars:90 }}" data-title-en="{{ task.t_en|truncatechars:90 }}" data-title-ru="{{ task.t_ru|truncatechars:90 }}" data-lang="{{ task.language }}" data-pts="{{ task.points|stringformat:'f' }}">{{ forloop.counter }}. {{ task.title|truncatechars:70 }}</option>
+              <option value="{{ task.id }}" data-title="{{ task.t_en|truncatechars:90 }}" data-title-en="{{ task.t_en|truncatechars:90 }}" data-title-ru="{{ task.t_ru|truncatechars:90 }}" data-lang="{{ task.language }}" data-pts="{{ task.points|stringformat:'f' }}">{{ forloop.counter }}. {{ task.t_en|truncatechars:70 }}</option>
             {% endfor %}
           </select>
           <div class="dd" id="dd">
             <button type="button" class="dd-btn" id="ddBtn"><span class="t" id="ddLabel"></span><span class="bdg" id="ddBadge">—</span><span class="arrow">&#9662;</span></button>
             <div class="dd-list" id="ddList" hidden></div>
           </div>
-          <div class="langsw" id="langSw">
-            <button type="button" data-l="az">AZ</button>
-            <button type="button" data-l="en">EN</button>
-            <button type="button" data-l="ru">RU</button>
-          </div>
+
           <span class="chip" id="langChip">Python</span>
         </div>
       </section>
@@ -260,15 +257,15 @@
       {% for task in tasks %}
         <div class="desc" data-id="{{ task.id }}" hidden>
           <section class="card desc-card">
-            <h3 class="dh"><span>Tapşırığın təfərrüatları</span><small>TAPŞIRIQ {{ forloop.counter }} / {{ tasks|length }} &middot; {{ task.points }} bal</small></h3>
+            <h3 class="dh"><span>Task details</span><small>TASK {{ forloop.counter }} / {{ tasks|length }} &middot; {{ task.points }} points</small></h3>
             <div class="desc-scroll">
-              <div class="task-desc" data-l="az">{{ task.description|format_task }}</div>
+
               <div class="task-desc" data-l="en" hidden>{{ task.d_en|format_task }}</div>
-              <div class="task-desc" data-l="ru" hidden>{{ task.d_ru|format_task }}</div>
+
               {% for t in task.visible_tests %}
                 <div class="samples">
-                  <div><span class="lbl">Nümunə giriş</span><div class="box"><pre>{% if t.input_data %}{{ t.input_data|cut:"#HARNESS" }}{% else %}(giriş yoxdur){% endif %}</pre></div></div>
-                  <div><span class="lbl">Gözlənilən çıxış</span><div class="box"><pre>{{ t.expected_output }}</pre></div></div>
+                  <div><span class="lbl">Sample input</span><div class="box"><pre>{% if t.input_data %}{{ t.input_data|cut:"#HARNESS" }}{% else %}(no input){% endif %}</pre></div></div>
+                  <div><span class="lbl">Expected output</span><div class="box"><pre>{{ t.expected_output }}</pre></div></div>
                 </div>
               {% endfor %}
             </div>
@@ -276,16 +273,16 @@
         </div>
         <textarea name="code_{{ task.id }}" id="code{{ task.id }}" hidden>{{ task.initial_code }}</textarea>
       {% empty %}
-        <section class="card desc-card"><h2>Bu imtahana tapşırıq əlavə edilməyib.</h2></section>
+        <section class="card desc-card"><h2>No tasks have been added to this exam.</h2></section>
       {% endfor %}
 
       {% if tasks %}
         <section class="card toolbar">
           <span class="lbl" style="margin:0">Dil: <b style="color:#fff" id="langName">Python</b></span>
           <div class="btns">
-            <button type="button" class="btn reset" id="resetBtn">Kodu sıfırla</button>
-            <button type="button" class="btn run" id="runBtn">&#9654; Nümunəni yoxla</button>
-            <button type="button" class="btn submit" id="submitBtn">Tapşırığı təhvil ver</button>
+            <button type="button" class="btn reset" id="resetBtn">Reset code</button>
+            <button type="button" class="btn run" id="runBtn">&#9654; Run public tests</button>
+            <button type="button" class="btn submit" id="submitBtn">Submit task</button>
           </div>
         </section>
 
@@ -299,7 +296,7 @@
           </div>
         </div>
 
-        <div id="results"><div class="info">Nəticə burada görünəcək.</div></div>
+        <div id="results"><div class="info">Results will appear here.</div></div>
       {% endif %}
     </main>
   </div>
@@ -319,7 +316,7 @@
 
   let current = null;
 
-  /* ---------- Bildirişlər ---------- */
+  /* ---------- Notifications ---------- */
   function notify(text, kind) {
     const li = document.createElement('li');
     if (kind) li.className = kind;
@@ -332,7 +329,7 @@
     notesEl.insertBefore(li, notesEl.firstChild);
   }
 
-  /* ---------- Bal və status ---------- */
+  /* ---------- Score and status ---------- */
   const scores = {};
   document.querySelectorAll('.st-item').forEach(function (li) {
     if (li.dataset.score !== '') scores[li.dataset.id] = parseFloat(li.dataset.score);
@@ -340,7 +337,7 @@
 
   function fmt(n) { return String(Math.round(n * 100) / 100); }
 
-  /* ---------- Tapşırıq siyahısı (açılan menyu) ---------- */
+  /* ---------- Task list ---------- */
   function badgeFor(id) {
     const li = document.getElementById('st' + id);
     const max = li ? parseFloat(li.dataset.points) : 0;
@@ -360,7 +357,7 @@
       it.className = 'dd-item' + (o.value === sel.value ? ' cur' : '');
       it.dataset.id = o.value;
       it.innerHTML = '<span class="n">' + (i + 1) + '.</span><span class="t"></span>' +
-        '<span class="p">' + fmt(parseFloat(o.dataset.pts)) + ' bal</span><span class="bdg ' + b.cls + '">' + b.text + '</span>';
+        '<span class="p">' + fmt(parseFloat(o.dataset.pts)) + ' points</span><span class="bdg ' + b.cls + '">' + b.text + '</span>';
       it.querySelector('.t').textContent = optTitle(o);
       list.appendChild(it);
     });
@@ -417,15 +414,15 @@
     initialCode[t.id.replace('code', '')] = t.value;
   });
 
-  /* ---------- Rəngləmə (Python) ---------- */
+  /* ---------- Python highlighting ---------- */
   const KW = new Set(['and','as','assert','break','class','continue','def','del','elif','else','except','finally',
-    'for','from','global','if','import','in','is','lambda','nonlocal','not','or','pass','raise','return','try',
+    'for','from','glopoints','if','import','in','is','lambda','nonlocal','not','or','pass','raise','return','try',
     'while','with','yield','None','True','False']);
   const BI = new Set(['print','input','int','float','str','list','dict','set','tuple','len','range','sum','min','max',
     'abs','sorted','enumerate','zip','map','filter','open','type','bool','round','reversed','any','all','pow','divmod']);
   const RX = new RegExp(
     '("""[\\s\\S]*?(?:"""|$)|\'\'\'[\\s\\S]*?(?:\'\'\'|$))' +
-    '|((?:[rRbBuUfF]{1,2})?"(?:\\\\.|[^"\\\\\\n])*(?:"|$)|(?:[rRbBuUfF]{1,2})?\'(?:\\\\.|[^\'\\\\\\n])*(?:\'|$))' +
+    '|((?:[rRbBuUfF]{1,2})?"(?:\\\\.|[^"\\n])*(?:"|$)|(?:[rRbBuUfF]{1,2})?\'(?:\\\\.|[^\'\\n])*(?:\'|$))' +
     '|(#[^\\n]*)' +
     '|(\\b\\d+(?:\\.\\d+)?\\b)' +
     '|([A-Za-z_\\u00C0-\\uFFFF][\\w\\u00C0-\\uFFFF]*)', 'g');
@@ -439,7 +436,7 @@
   const RXJ = new RegExp(
     '(\\/\\*[\\s\\S]*?(?:\\*\\/|$))' +
     '|(\\/\\/[^\\n]*)' +
-    '|("(?:\\\\.|[^"\\\\\\n])*(?:"|$)|\'(?:\\\\.|[^\'\\\\\\n])*(?:\'|$))' +
+    '|("(?:\\\\.|[^"\\n])*(?:"|$)|\'(?:\\\\.|[^\'\\n])*(?:\'|$))' +
     '|(\\b\\d+(?:\\.\\d+)?[LlFfDd]?\\b)' +
     '|(@?[A-Za-z_$][\\w$]*)', 'g');
 
@@ -498,29 +495,22 @@
     hl.innerHTML = highlight(editor.value);
   }
 
-  /* ---------- Dil seçimi (AZ / EN / RU) ---------- */
-  let uiLang = 'az';
-  try { uiLang = localStorage.getItem('examLang') || 'az'; } catch (e) {}
-  if (['az', 'en', 'ru'].indexOf(uiLang) < 0) uiLang = 'az';
+  /* ---------- English task content ---------- */
+  let uiLang = 'en';
+  try { uiLang = 'en'; } catch (e) {}
+  uiLang = 'en';
 
   function optTitle(o) {
-    if (uiLang === 'en') return o.dataset.titleEn || o.dataset.title;
-    if (uiLang === 'ru') return o.dataset.titleRu || o.dataset.title;
-    return o.dataset.title;
+    return o.dataset.titleEn || o.dataset.title;
   }
   function applyLang() {
-    document.querySelectorAll('#langSw button').forEach(function (b) {
-      b.classList.toggle('on', b.dataset.l === uiLang);
-    });
+
     document.querySelectorAll('.task-desc').forEach(function (d) {
-      // seçilən dilin mətni boşdursa (yalnız azərbaycanca var) az göstərilir
       d.hidden = d.dataset.l !== uiLang;
     });
     document.querySelectorAll('.desc').forEach(function (box) {
       const cur = box.querySelector('.task-desc[data-l="' + uiLang + '"]');
-      if (!cur || !cur.textContent.trim()) {
-        box.querySelectorAll('.task-desc').forEach(function (d) { d.hidden = d.dataset.l !== 'az'; });
-      }
+      if (!cur || !cur.textContent.trim()) box.querySelectorAll('.task-desc').forEach(function (d) { d.hidden = d.dataset.l !== 'en'; });
     });
     refreshDD();
   }
@@ -532,7 +522,7 @@
     if (b) b.textContent = name;
   }
 
-  /* Kursor həmişə görünsün (səhifə və üfqi sürüşdürmə) */
+  /* Keep the cursor visible while scrolling */
   const codeArea = document.getElementById('codeArea');
   let charW = 0;
   function measureChar() {
@@ -548,11 +538,11 @@
     const lh = parseFloat(getComputedStyle(editor).lineHeight) || 23;
     const upto = editor.value.slice(0, editor.selectionStart).split('\n');
     const line = upto.length, col = upto[upto.length - 1].length;
-    // üfqi
+    // horizontal scroll
     const x = 14 + col * charW;
     if (x < codeArea.scrollLeft + 20) codeArea.scrollLeft = Math.max(0, x - 40);
     else if (x > codeArea.scrollLeft + codeArea.clientWidth - 30) codeArea.scrollLeft = x - codeArea.clientWidth + 60;
-    // şaquli (yapışqan şərt qutusunun altı ilə pəncərənin altı arası)
+    // vertical scroll
     const top = editor.getBoundingClientRect().top + 16 + (line - 1) * lh;
     const minY = 8;
     const maxY = window.innerHeight - lh * 2;
@@ -573,7 +563,7 @@
 
   function refresh() { saveCurrent(); updateGutter(); updateHL(); ensureCaretVisible(); }
 
-  /* ---------- Tapşırıq seçimi ---------- */
+  /* ---------- Task selection ---------- */
   function info(text) {
     results.innerHTML = '';
     const d = document.createElement('div');
@@ -600,10 +590,10 @@
     codeArea.scrollLeft = 0;
     applyLang();
     if (select) window.scrollTo({ top: 0 });
-    info('Nəticə burada görünəcək.');
+    info('Results will appear here.');
   }
 
-  /* ---------- Redaktor: mətn əməliyyatları ---------- */
+  /* ---------- Editor input handling ---------- */
   function setCaret(pos) { editor.selectionStart = editor.selectionEnd = pos; }
 
   function replaceRange(start, end, text, caret) {
@@ -702,27 +692,14 @@
     }
   }
 
-  /* ---------- Nəticə kartları ---------- */
-  function field(label, text, cls) {
-    const w = document.createElement('div');
-    const l = document.createElement('span');
-    l.className = 'lbl';
-    l.textContent = label;
-    const p = document.createElement('pre');
-    if (cls) p.className = cls;
-    p.textContent = text;
-    w.appendChild(l);
-    w.appendChild(p);
-    return w;
-  }
-
-    function renderResults(list, passed, total) {
-    results.innerHTML = '';
+  /* ---------- Result cards ---------- */
+  function renderResults(list, passed, total) {
+    results.replaceChildren();
 
     const sum = document.createElement('div');
     sum.className = 'res ' + (passed === total ? 'ok' : 'bad');
     const sh = document.createElement('h4');
-    sh.textContent = 'Keçən testlər: ' + passed + ' / ' + total + (passed === total ? ' ✓' : '');
+    sh.textContent = 'Public test cases passed: ' + passed + ' / ' + total + (passed === total ? ' ✓' : '');
     sum.appendChild(sh);
     results.appendChild(sum);
 
@@ -730,16 +707,8 @@
       const box = document.createElement('div');
       box.className = 'res ' + (r.ok ? 'ok' : 'bad');
       const h = document.createElement('h4');
-      h.textContent = 'Nümunə ' + (i + 1) + (r.ok ? ': düzgündür ✓' : ': səhvdir ✗');
+      h.textContent = 'Test case ' + (r.case || i + 1) + ': ' + (r.verdict || (r.ok ? 'Accepted' : 'Wrong Answer'));
       box.appendChild(h);
-      const cols = document.createElement('div');
-      cols.className = 'cols';
-      cols.appendChild(field('Giriş', r.input || '(giriş yoxdur)'));
-      cols.appendChild(field('Gözlənilən', r.expected));
-      cols.appendChild(r.error
-        ? field('Xəta', r.error, 'err')
-        : field('Sənin çıxışın', r.output || '(çıxış yoxdur)'));
-      box.appendChild(cols);
       results.appendChild(box);
     });
   }
@@ -753,17 +722,10 @@
     return resp.json();
   }
 
-  /* ---------- Qoşulma ---------- */
+  /* ---------- Connection ---------- */
   if (select && editor) {
     select.addEventListener('change', function () { showTask(select.value); });
     document.getElementById('ddBtn').addEventListener('click', function () { toggleDD(); });
-    document.querySelectorAll('#langSw button').forEach(function (b) {
-      b.addEventListener('click', function () {
-        uiLang = b.dataset.l;
-        try { localStorage.setItem('examLang', uiLang); } catch (e) {}
-        applyLang();
-      });
-    });
     document.getElementById('ddList').addEventListener('click', function (ev) {
       const it = ev.target.closest('.dd-item');
       if (it) showTask(it.dataset.id);
@@ -783,19 +745,19 @@
 
     document.getElementById('resetBtn').addEventListener('click', function () {
       if (!current) return;
-      if (!confirm('Bu tapşırığın kodu ilkin vəziyyətinə qayıdacaq. Əminsən?')) return;
+      if (!confirm('Reset this task code to its initial version?')) return;
       editor.value = initialCode[current] || '';
       refresh();
     });
 
     runBtn.addEventListener('click', async function () {
       runBtn.disabled = true;
-      info('İşləyir...');
+      info('Running...');
       try {
         const data = await post("{% url 'run_code' exam.id %}", { code: editor.value, task_id: current });
         if (data.error) info(data.error); else renderResults(data.results, data.passed, data.total);
       } catch (e) {
-        info('Serverlə əlaqə alınmadı.');
+        info('Could not connect to the server.');
       }
       runBtn.disabled = false;
     });
@@ -805,7 +767,7 @@
       const id = current;
       const num = select.selectedIndex + 1;
       submitBtn.disabled = true;
-      info('Bütün testlər yoxlanır...');
+      info('Checking your submission...');
       try {
         const data = await post("{% url 'submit_task' exam.id %}", { code: editor.value, task_id: id });
         if (data.error) {
@@ -814,27 +776,26 @@
         } else {
           scores[String(data.task_id)] = data.score;
           updateStatus(String(data.task_id));
-          const good = data.passed === data.total;
-          notify('Tapşırıq ' + num + ' təhvil verildi: ' + data.passed + '/' + data.total +
-                 ' test keçdi, ' + fmt(data.score) + ' / ' + fmt(data.max) + ' bal', good ? 'ok' : 'warn');
+          const good = data.accepted;
+          notify('Task ' + num + ' submitted. Score: ' + fmt(data.score) + ' / ' + fmt(data.max), good ? 'ok' : 'warn');
           const next = select.options[select.selectedIndex + 1];
           if (next) {
             showTask(next.value);
           } else {
-            info('Tapşırıq təhvil verildi. Bütün tapşırıqlara baxıb "İmtahanı bitir" düyməsinə bas.');
-            notify('Sonuncu tapşırıqdır. İmtahanı bitirə bilərsən.');
+            info('Task submitted. Review all tasks, then click “Finish exam”.');
+            notify('This is the last task. You can finish the exam.');
           }
         }
       } catch (e) {
-        info('Serverlə əlaqə alınmadı.');
-        notify('Serverlə əlaqə alınmadı.', 'bad');
+        info('Could not connect to the server.');
+        notify('Could not connect to the server.', 'bad');
       }
       submitBtn.disabled = false;
     });
 
     showTask(select.value);
     applyLang();
-    notify('İmtahan başladı. Uğurlar!');
+    notify('The exam has started. Good luck!');
   }
 
   /* ---------- Taymer ---------- */
@@ -848,7 +809,7 @@
     const s = String(left % 60).padStart(2, '0');
     timerEl.textContent = m + ':' + s;
     if (left <= 60) timerBox.classList.add('low');
-    if (left <= 300 && !warned5 && left > 60) { warned5 = true; notify('Son 5 dəqiqə qalıb.', 'warn'); }
+    if (left <= 300 && !warned5 && left > 60) { warned5 = true; notify('5 minutes remaining.', 'warn'); }
   }
   render();
 
@@ -864,7 +825,7 @@
 
   form.addEventListener('submit', function (e) {
     saveCurrent();
-    if (left > 0 && !confirm('İmtahanı bitirmək istəyirsən? Təhvil verilməyən tapşırıqlar cari kodla yoxlanacaq.')) {
+    if (left > 0 && !confirm('Are you sure you want to finish the exam? Unsubmitted tasks will be graded using their current code.')) {
       e.preventDefault();
     }
   });

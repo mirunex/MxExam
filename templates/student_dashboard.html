@@ -1,10 +1,10 @@
 {% load static %}
 <!DOCTYPE html>
-<html lang="az">
+<html lang="en" data-theme="dark" data-project="mxexam">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tələbə Paneli — ExamGuard</title>
+    <title>Student dashboard — MxExam</title>
     <link rel="icon" type="image/x-icon" href="{% static 'favicon.ico' %}">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
@@ -15,7 +15,7 @@
             background-attachment: fixed;
         }
 
-        /* Glassmorphism Ana Şablonlar */
+        /* Glassmorphism layout */
         .glass-panel {
             background: rgba(255, 255, 255, 0.07);
             backdrop-filter: blur(16px);
@@ -33,13 +33,13 @@
         }
 
         .glass-header-student {
-            background: linear-gradient(135deg, rgba(16, 185, 129, 0.3), rgba(59, 130, 246, 0.3));
+            background: linear-gradient(135deg, rgba(124, 58, 237, 0.24), rgba(139, 92, 246, 0.18));
             border-bottom: 1px solid rgba(255, 255, 255, 0.15);
             border-top-left-radius: 20px !important;
             border-top-right-radius: 20px !important;
         }
 
-        /* İmtahan Kartları üçün Glass Stili */
+        /* Exam card glass style */
         .glass-card {
             background: rgba(255, 255, 255, 0.05);
             backdrop-filter: blur(10px);
@@ -56,7 +56,7 @@
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
         }
 
-        /* Düymə Stili */
+        /* Button style */
         .btn-glass-gradient {
             background: linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%);
             border: 1px solid rgba(255, 255, 255, 0.2);
@@ -76,16 +76,18 @@
             color: white;
         }
     </style>
+    <link rel="stylesheet" href="{% static 'mirunex/mirunex.css' %}">
+<link rel="stylesheet" href="{% static 'mirunex/themes/mxexam.css' %}">
 </head>
-<body>
+<body class="mx-body">
     <nav class="navbar navbar-dark navbar-custom mb-4 py-3">
         <div class="container d-flex justify-content-between align-items-center">
-            <span class="navbar-brand mb-0 h1 fw-bold text-white" style="letter-spacing: 0.5px;">ExamGuard — Tələbə Paneli</span>
+            <span class="navbar-brand mb-0 h1 fw-bold text-white" style="letter-spacing: 0.5px;">MxExam — Student dashboard</span>
             <div class="d-flex align-items-center gap-3">
-                <span class="text-white-50">Xoş gəldiniz, <strong class="text-white">{{ request.user.username }}</strong>!</span>
+                <span class="text-white-50">Welcome, <strong class="text-white">{{ request.user.username }}</strong>!</span>
                 <form action="{% url 'logout' %}" method="post" class="m-0">
                     {% csrf_token %}
-                    <button type="submit" class="btn btn-sm btn-outline-light rounded-pill px-3">Çıxış et</button>
+                    <button type="submit" class="btn btn-sm btn-outline-light rounded-pill px-3">Log out</button>
                 </form>
             </div>
         </div>
@@ -96,13 +98,13 @@
             <div class="col-md-10">
                 <div class="glass-panel">
                     <div class="glass-header-student py-3 px-4">
-                        <h5 class="card-title mb-0 fw-bold text-white">✍️ Mövcud İmtahanlar</h5>
+                        <h5 class="card-title mb-0 fw-bold text-white">✍️ Available exams</h5>
                     </div>
                     <div class="p-4">
                         {% if messages %}
                             <div class="mb-4">
                                 {% for message in messages %}
-                                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show bg-opacity-25 border text-white" role="alert">
+                                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show border" role="alert">
                                         {{ message }}
                                         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Close"></button>
                                     </div>
@@ -118,24 +120,24 @@
                                             <div>
                                                 <h5 class="card-title fw-bold text-white mb-2">{{ exam.title }}</h5>
                                                 <p class="card-text text-white-50 small mb-3">
-                                                    {{ exam.description|default:"Açıqlama daxil edilməyib." }}
+                                                    {{ exam.description|default:"No description provided." }}
                                                 </p>
                                                 <div class="d-flex flex-wrap gap-2 mb-4">
                                                     <span class="badge bg-info bg-opacity-25 text-info border border-info rounded-pill px-3 py-2">
-                                                        ⏱️ {{ exam.duration_minutes }} dəqiqə
+                                                        ⏱️ {{ exam.duration_minutes }} minutes
                                                     </span>
                                                     <span class="badge bg-warning bg-opacity-25 text-warning border border-warning rounded-pill px-3 py-2">
-                                                        ⚠️ Max xəbərdarlıq: {{ exam.max_warnings }}
+                                                        ⚠️ Maximum warnings: {{ exam.max_warnings }}
                                                     </span>
                                                 </div>
                                             </div>
                                             {% if exam.result %}
                                                 <span class="badge bg-success fs-6">
-                                                    Nəticə: {{ exam.result.score }} / {{ exam.result.total }}
+                                                    Result: {{ exam.result.score }} / {{ exam.result.total }}
                                                 </span>
                                             {% else %}
                                                 <a href="{% url 'start_exam' exam.id %}" class="btn-glass-gradient w-100 py-2">
-                                                    İmtahana Başla
+                                                    Start exam
                                                 </a>
                                             {% endif %}
                                    
@@ -145,7 +147,7 @@
                             </div>
                         {% else %}
                             <div class="text-center py-5">
-                                <p class="text-white-50 mb-0">Hazırda aktiv olan heç bir imtahan yoxdur.</p>
+                                <p class="text-white-50 mb-0">There are no active exams right now.</p>
                             </div>
                         {% endif %}
                     </div>
@@ -153,6 +155,11 @@
             </div>
         </div>
     </div>
+
+    <footer class="mx-footer container mt-4">
+        <span>© {% now "Y" %} MxExam · by</span>
+        <a href="https://mirunex.com" target="_blank" rel="noopener">Mirunex team</a>
+    </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>

@@ -21,7 +21,7 @@ import json
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 from core.code_runner import check_task
-from core.models import CodeSubmission
+from core.models import CodeSubmission, CodeSubmissionAttempt
 from core.excel_import import parse_students_excel
 from django.db.models import Count
 from django.utils import timezone
@@ -55,7 +55,7 @@ def role_login_view(request, allowed_roles, title, subtitle):
             login(request, user)
             return redirect('dashboard')
 
-        error = 'İstifadəçi adı, şifrə və ya giriş növü yanlışdır.'
+        error = 'The username, password, or account type is incorrect.'
 
     return render(request, 'login.html', {
         'error': error,
@@ -68,8 +68,8 @@ def user_login_view(request):
     return role_login_view(
         request,
         ('teacher', 'student'),
-        'ExamGuard',
-        'Müəllim və tələbə girişi',
+        'MxExam',
+        'Teacher and student sign-in',
     )
 
 
@@ -77,8 +77,8 @@ def admin_login_view(request):
     return role_login_view(
         request,
         ('admin',),
-        'ExamGuard Admin',
-        'Müəssisə inzibatçısı girişi',
+        'MxExam Admin',
+        'Institution administrator sign-in',
     )
 
 
@@ -86,8 +86,8 @@ def superadmin_login_view(request):
     return role_login_view(
         request,
         ('superadmin',),
-        'ExamGuard Control',
-        'Sistem superadmin girişi',
+        'MxExam Control',
+        'System super administrator sign-in',
     )
 
 @login_required
@@ -127,7 +127,7 @@ def institution_admin_create_view(request, institution_id):
 
             messages.success(
                 request,
-                f"'{institution.name}' üçün inzibatçı (admin) uğurla yaradıldı.",
+                f"'{institution.name}'  administrator created successfully.",
             )
             return redirect('superadmin_dashboard')
     else:
@@ -155,7 +155,7 @@ def teacher_create_view(request):
             user.institution = request.user.institution  
             user.save()
 
-            messages.success(request, "Müəllim uğurla yaradıldı.")
+            messages.success(request, "Teacher created successfully.")
             return redirect('admin_dashboard')
     else:
         form = TeacherForm()
@@ -181,7 +181,7 @@ def admin_groups_view(request):
 
             messages.success(
                 request,
-                f"'{group.name}' qrupu uğurla yaradıldı.",
+                f"'{group.name}' group created successfully.",
             )
             return redirect('admin_groups')
     else:
@@ -205,7 +205,7 @@ def institution_create_view(request):
         form = InstitutionForm(request.POST)
         if form.is_valid():
             form.save()
-            messages.success(request, "Müəssisə yaradıldı.")
+            messages.success(request, "Institution created successfully.")
             return redirect('superadmin_dashboard')
     else:
         form = InstitutionForm()
@@ -276,10 +276,10 @@ def create_exam_view(request):
 
             try:
                 if question_type == 'code' and not is_excel:
-                    pdf_form.add_error('pdf_file', 'Kod imtahanı üçün Excel (.xlsx) faylı yükləyin.')
+                    pdf_form.add_error('pdf_file', 'Upload an Excel (.xlsx) file for a coding exam.')
                     full_text = None
                 elif question_type != 'code' and is_excel:
-                    pdf_form.add_error('pdf_file', 'Bu imtahan növü üçün PDF faylı yükləyin.')
+                    pdf_form.add_error('pdf_file', 'Upload a PDF file for this exam type.')
                     full_text = None
                 elif question_type == 'code':
                     code_tasks, errors = parse_tasks_excel(upload)
@@ -294,7 +294,7 @@ def create_exam_view(request):
                     else:
                         questions, errors = parse_test_questions(full_text)
             except Exception:
-                pdf_form.add_error('pdf_file', 'Faylı oxumaq olmadı.')
+                pdf_form.add_error('pdf_file', 'Could not read the file.')
                 full_text = None
 
 
@@ -308,7 +308,7 @@ def create_exam_view(request):
 
                 if not full_text.strip() or (not found and not errors):
                     pdf_form.add_error(
-                        'pdf_file', 'PDF-də düzgün formatlı suallar tapılmadı.'
+                        'pdf_file', 'No questions in the expected format were found in the PDF.'
                     )
                 elif errors:
                     for error in errors:
@@ -352,7 +352,7 @@ def create_exam_view(request):
                                 )
                                 for q in questions
                             ])
-                    messages.success(request, "İmtahan uğurla yaradıldı.")
+                    messages.success(request, "Exam created successfully.")
                     return redirect('teacher_dashboard')
     else:
         form = ExamForm(teacher=request.user)
@@ -375,7 +375,7 @@ def student_create_view(request):
             user.role = 'student'
             user.institution = request.user.institution
             user.save()
-            messages.success(request, "Tələbə uğurla yaradıldı.")
+            messages.success(request, "Student created successfully.")
             return redirect('admin_dashboard')
     else:
         form = StudentForm()
@@ -393,11 +393,11 @@ def student_import_view(request):
         file = request.FILES.get('excel_file')
 
         if file is None:
-            messages.error(request, "Fayl seçilməyib.")
+            messages.error(request, "No file was selected.")
         elif not file.name.lower().endswith('.xlsx'):
-            messages.error(request, "Yalnız .xlsx formatı qəbul olunur.")
+            messages.error(request, "Only .xlsx files are accepted.")
         elif file.size > 2 * 1024 * 1024:
-            messages.error(request, "Fayl 2 MB-dan böyük ola bilməz.")
+            messages.error(request, "The file must not exceed 2 MB.")
         else:
             group_names = set(
                 Group.objects.filter(institution=institution).values_list('name', flat=True)
@@ -433,7 +433,7 @@ def student_import_confirm_view(request):
     institution = request.user.institution
     rows = request.session.pop('import_rows', None)
     if not rows:
-        messages.error(request, "Yükləmə vaxtı bitib. Faylı yenidən yüklə.")
+        messages.error(request, "The upload session expired. Upload the file again.")
         return redirect('student_import')
 
     created = added = skipped = 0
@@ -467,7 +467,7 @@ def student_import_confirm_view(request):
 
     messages.success(
         request,
-        f"Yeni tələbə: {created}, mövcud tələbə qrupa əlavə olundu: {added}, keçilən: {skipped}.",
+        f"New students: {created}; existing students added to groups: {added}; skipped: {skipped}.",
     )
     return redirect('admin_dashboard')
 
@@ -507,7 +507,7 @@ def grade_written_view(request, exam_id, student_id):
         result.total = sum(x.question.points for x in all_answers)
         result.save()
 
-        messages.success(request, "Ballar saxlanıldı.")
+        messages.success(request, "Scores saved.")
         return redirect('exam_results', exam_id=exam.id)
 
     return render(request, 'grade_written.html', {
@@ -587,12 +587,12 @@ def upload_exam_pdf(request, exam_id):
                     page.extract_text() or "" for page in reader.pages
                 )
             except Exception:
-                form.add_error("pdf_file", "PDF faylını oxumaq mümkün olmadı.")
+                form.add_error("pdf_file", "Could not read the PDF file.")
             else:
                 if not full_text.strip():
                     form.add_error(
                         "pdf_file",
-                        "PDF-dən mətn çıxmadı. Skan edilmiş PDF dəstəklənmir.",
+                        "No text could be extracted from the PDF. Scanned PDFs are not supported.",
                     )
                 else:
                     questions, errors = parse_test_questions(full_text)
@@ -633,6 +633,8 @@ def start_exam_view(request, exam_id):
     session, created = ExamSession.objects.get_or_create(
         student=request.user, exam=exam
     )
+    session.last_seen_at = timezone.now()
+    session.save(update_fields=["last_seen_at"])
 
     if request.method == 'GET' and not created and not exam.allow_reentry:
         return redirect('student_dashboard')
@@ -656,18 +658,17 @@ def start_exam_view(request, exam_id):
             score = 0.0
             total = 0.0
             for task in tasks:
-                sub = subs.get(task.id)
-                if sub is None:
-                 
-                    code = request.POST.get(f'code_{task.id}', '')
-                    passed, count = check_task(task, code)
-                    earned = task.points * passed / count if count else 0.0
-                    CodeSubmission.objects.update_or_create(
-                        student=request.user, task=task,
-                        defaults={'code': code, 'passed': passed, 'total': count, 'score': earned},
-                    )
-                else:
-                    earned = sub.score
+                code = request.POST.get(f'code_{task.id}', '')
+                passed, count = check_task(task, code)
+                earned = task.points * passed / count if count else 0.0
+                CodeSubmissionAttempt.objects.create(
+                    student=request.user, task=task, code=code,
+                    passed=passed, total=count, score=earned,
+                )
+                CodeSubmission.objects.update_or_create(
+                    student=request.user, task=task,
+                    defaults={'code': code, 'passed': passed, 'total': count, 'score': earned},
+                )
                 score += earned
                 total += task.points
             ExamResult.objects.update_or_create(
@@ -730,75 +731,100 @@ def start_exam_view(request, exam_id):
 def exam_results_view(request, exam_id):
     if not request.user.is_teacher():
         return redirect('student_dashboard')
-
     exam = get_object_or_404(Exam, id=exam_id, created_by=request.user)
-    results = exam.results.select_related('student').order_by('-score')
-    return render(
-        request,
-        'exam_results.html',
-        {
-            'exam': exam,
-            'results': results,
-        },
-    )
+    students = User.objects.filter(role='student', student_groups__exams=exam).distinct().order_by('last_name', 'first_name', 'username')
+    results_by_id = {r.student_id: r for r in exam.results.select_related('student')}
+    sessions_by_id = {s.student_id: s for s in exam.sessions.select_related('student')}
+    roster = []
+    for student in students:
+        student.exam_result = results_by_id.get(student.id)
+        student.exam_session = sessions_by_id.get(student.id)
+        student.is_online = bool(student.exam_session and student.exam_session.last_seen_at and student.exam_session.last_seen_at >= timezone.now() - timedelta(seconds=45) and not student.exam_result)
+        student.violation_count = Violation.objects.filter(student=student, exam=exam).count()
+        student.submission_count = CodeSubmissionAttempt.objects.filter(student=student, task__exam=exam).count()
+        roster.append(student)
+    return render(request, 'exam_results.html', {'exam': exam, 'results': roster})
+
+
+@login_required
+def teacher_student_detail_view(request, exam_id, student_id):
+    if not request.user.is_teacher():
+        return redirect('dashboard')
+    exam = get_object_or_404(Exam, id=exam_id, created_by=request.user)
+    student = get_object_or_404(User, id=student_id, role='student', student_groups__exams=exam)
+    session = ExamSession.objects.filter(student=student, exam=exam).first()
+    attempts = CodeSubmissionAttempt.objects.filter(student=student, task__exam=exam).select_related('task')
+    events = ExamEvent.objects.filter(student=student, exam=exam)
+    violations = Violation.objects.filter(student=student, exam=exam)
+    timeline = []
+    for event in events:
+        if event.kind == 'run':
+            text = f"Ran task {event.task_number} ({event.passed}/{event.total} public tests passed)"
+        else:
+            text = f"Submitted task {event.task_number} ({event.score:g}/{event.max_score:g} points)"
+        timeline.append({'created_at': event.created_at, 'text': text})
+    violation_labels = {'tab_hidden': 'Switched to another tab', 'window_blur': 'Left the exam window', 'paste': 'Pasted text'}
+    for violation in violations:
+        timeline.append({'created_at': violation.created_at, 'text': violation_labels.get(violation.kind, violation.kind)})
+    if session:
+        timeline.append({'created_at': session.started_at, 'text': 'Started the exam'})
+    result = ExamResult.objects.filter(student=student, exam=exam).first()
+    if result:
+        timeline.append({'created_at': result.submitted_at, 'text': 'Submitted the exam'})
+    timeline.sort(key=lambda item: item['created_at'], reverse=True)
+    return render(request, 'teacher_student_detail.html', {'exam': exam, 'student': student, 'session': session, 'attempts': attempts, 'timeline': timeline, 'result': result})
+
+
+@login_required
+@require_POST
+def exam_presence_view(request, exam_id):
+    if request.user.role != 'student':
+        return JsonResponse({'error': 'Not allowed.'}, status=403)
+    session = ExamSession.objects.filter(student=request.user, exam_id=exam_id, exam__groups__students=request.user).first()
+    if not session or ExamResult.objects.filter(student=request.user, exam_id=exam_id).exists():
+        return JsonResponse({'ok': False}, status=404)
+    session.last_seen_at = timezone.now()
+    session.save(update_fields=['last_seen_at'])
+    return JsonResponse({'ok': True})
 
 @login_required
 @require_POST
 def run_code_view(request, exam_id):
     if request.user.role != 'student':
-        return JsonResponse({'error': 'İcazəniz yoxdur.'}, status=403)
-
-    exam = get_object_or_404(
-        Exam,
-        id=exam_id,
-        exam_type='code',
-        groups__students=request.user,
-    )
-
-
-    if ExamResult.objects.filter(student=request.user, exam=exam).exists() \
-            or not exam.is_open(grace_seconds=30):
-        return JsonResponse({'error': 'İmtahan bağlıdır.'}, status=403)
-
+        return JsonResponse({'error': 'Not allowed.'}, status=403)
+    exam = get_object_or_404(Exam, id=exam_id, exam_type='code', groups__students=request.user)
+    if ExamResult.objects.filter(student=request.user, exam=exam).exists() or not exam.is_open(grace_seconds=30):
+        return JsonResponse({'error': 'This exam is closed.'}, status=403)
     try:
         data = json.loads(request.body)
         task = CodeTask.objects.filter(id=int(data.get('task_id')), exam=exam).first()
     except (ValueError, TypeError):
-        return JsonResponse({'error': 'Səhv sorğu.'}, status=400)
-
+        return JsonResponse({'error': 'Invalid request.'}, status=400)
     if task is None:
-        return JsonResponse({'error': 'Tapşırıq tapılmadı.'}, status=404)
-
+        return JsonResponse({'error': 'Task not found.'}, status=404)
     code = data.get('code', '')
-    if len(code) > 20000:
-        return JsonResponse({'error': 'Kod çox uzundur.'}, status=400)
-
+    if not isinstance(code, str) or len(code) > 20000:
+        return JsonResponse({'error': 'Code is too long.'}, status=400)
+    visible_tests = list(task.test_cases.filter(is_hidden=False).order_by('id'))
     results = []
     passed = 0
-    tests = list(task.test_cases.order_by('id'))
-    for t in tests:
-        out, err = run_code(code, t.input_data, task.language)
-        ok = (not err and out == t.expected_output.strip())
-        if ok:
-            passed += 1
-        if not t.is_hidden:
-            results.append({
-                'input': t.input_data.replace('#HARNESS\n', '', 1),
-                'expected': t.expected_output,
-                'output': out,
-                'error': err,
-                'ok': ok,
-            })
-    ExamEvent.objects.create(
-        student=request.user, exam=exam, kind='run',
-        task_number=task_number(exam, task), passed=passed, total=len(tests),
-    )
-    return JsonResponse({'results': results, 'passed': passed, 'total': len(tests)})
+    for case_no, test in enumerate(visible_tests, 1):
+        output, error = run_code(code, test.input_data, task.language)
+        ok = not error and output == test.expected_output.strip()
+        passed += int(ok)
+        results.append({
+            'case': case_no,
+            'verdict': 'Accepted' if ok else ('Runtime Error' if error else 'Wrong Answer'),
+            'ok': ok,
+        })
+    ExamEvent.objects.create(student=request.user, exam=exam, kind='run', task_number=task_number(exam, task), passed=passed, total=len(visible_tests))
+    return JsonResponse({'results': results, 'passed': passed, 'total': len(visible_tests)})
+
 @login_required
 @require_POST
 def submit_task_view(request, exam_id):
     if request.user.role != 'student':
-        return JsonResponse({'error': 'İcazəniz yoxdur.'}, status=403)
+        return JsonResponse({'error': 'You are not allowed to do this.'}, status=403)
 
     exam = get_object_or_404(
         Exam,
@@ -809,24 +835,25 @@ def submit_task_view(request, exam_id):
 
     if ExamResult.objects.filter(student=request.user, exam=exam).exists() \
             or not exam.is_open(grace_seconds=30):
-        return JsonResponse({'error': 'İmtahan bağlıdır.'}, status=403)
+        return JsonResponse({'error': 'This exam is closed.'}, status=403)
 
     try:
         data = json.loads(request.body)
         task = CodeTask.objects.filter(id=int(data.get('task_id')), exam=exam).first()
     except (ValueError, TypeError):
-        return JsonResponse({'error': 'Səhv sorğu.'}, status=400)
+        return JsonResponse({'error': 'Invalid request.'}, status=400)
 
     if task is None:
-        return JsonResponse({'error': 'Tapşırıq tapılmadı.'}, status=404)
+        return JsonResponse({'error': 'Task not found.'}, status=404)
 
     code = data.get('code', '')
     if len(code) > 20000:
-        return JsonResponse({'error': 'Kod çox uzundur.'}, status=400)
+        return JsonResponse({'error': 'Code is too long.'}, status=400)
 
     passed, count = check_task(task, code)
     earned = task.points * passed / count if count else 0.0
 
+    CodeSubmissionAttempt.objects.create(student=request.user, task=task, code=code, passed=passed, total=count, score=earned)
     CodeSubmission.objects.update_or_create(
         student=request.user, task=task,
         defaults={'code': code, 'passed': passed, 'total': count, 'score': earned},
@@ -836,10 +863,7 @@ def submit_task_view(request, exam_id):
     task_number=task_number(exam, task), passed=passed, total=count,
     score=earned, max_score=task.points,
     )
-    return JsonResponse({
-        'task_id': task.id, 'passed': passed, 'total': count,
-        'score': round(earned, 2), 'max': task.points,
-    })
+    return JsonResponse({'task_id': task.id, 'accepted': bool(count and passed == count), 'score': round(earned, 2), 'max': task.points})
 
 @login_required
 @require_POST
@@ -855,12 +879,13 @@ def reset_result_view(request, exam_id, student_id):
         ExamSession.objects.filter(student=student, exam=exam).delete()
         Answer.objects.filter(student=student, question__exam=exam).delete()
         CodeSubmission.objects.filter(student=student, task__exam=exam).delete()
+        CodeSubmissionAttempt.objects.filter(student=student, task__exam=exam).delete()
         Violation.objects.filter(student=student, exam=exam).delete()
         ExamEvent.objects.filter(student=student, exam=exam).delete()
 
     messages.success(
         request,
-        f"{student.get_full_name() or student.username} üçün nəticə sıfırlandı.",
+        f"{student.get_full_name() or student.username} exam result was reset.",
     )
     return redirect('exam_results', exam_id=exam.id)
 
@@ -909,7 +934,7 @@ def admin_group_detail_view(request, group_id):
             group.students.remove(student)
             messages.success(
                 request,
-                f"{student.get_full_name() or student.username} qrupdan çıxarıldı.",
+                f"{student.get_full_name() or student.username} was removed from the group.",
             )
         return redirect('admin_group_detail', group_id=group.id)
 
@@ -935,9 +960,9 @@ def exam_violation_view(request, exam_id):
     try:
         kind = json.loads(request.body).get('kind')
     except ValueError:
-        return JsonResponse({'error': 'Səhv sorğu.'}, status=400)
+        return JsonResponse({'error': 'Invalid request.'}, status=400)
     if kind not in VIOLATION_KINDS:
-        return JsonResponse({'error': 'Səhv növ.'}, status=400)
+        return JsonResponse({'error': 'Invalid event type.'}, status=400)
 
     # 3 saniyə ərzində təkrarlananları (blur + tab dəyişmə eyni anda) bir say
     last = Violation.objects.filter(student=request.user, exam=exam).order_by('-created_at').first()
@@ -949,9 +974,9 @@ def exam_violation_view(request, exam_id):
     return JsonResponse({'count': count, 'max': limit, 'removed': count >= limit})
 
 KIND_LABELS = {
-    'tab_hidden': 'başqa taba keçdi',
-    'window_blur': 'imtahan pəncərəsindən çıxdı',
-    'paste': 'mətn yapışdırdı',
+    'tab_hidden': 'Switched to another tab',
+    'window_blur': 'Left the exam window',
+    'paste': 'Pasted text',
 }
 
 
@@ -980,7 +1005,7 @@ def teacher_live_feed_view(request):
     for s in ExamSession.objects.filter(
             exam__created_by=me, started_at__gt=since).select_related('student', 'exam'):
         events.append({'t': s.started_at, 'kind': 'entered', 'student': name(s.student),
-                       'exam': s.exam.title, 'detail': 'imtahana girdi'})
+                       'exam': s.exam.title, 'detail': 'Started the exam'})
 
     for v in Violation.objects.filter(
             exam__created_by=me, created_at__gt=since).select_related('student', 'exam'):
@@ -990,17 +1015,17 @@ def teacher_live_feed_view(request):
     for r in ExamResult.objects.filter(
             exam__created_by=me, submitted_at__gt=since).select_related('student', 'exam'):
         events.append({'t': r.submitted_at, 'kind': 'submitted', 'student': name(r.student),
-                       'exam': r.exam.title, 'detail': f'imtahanı bitirdi ({r.score:g} / {r.total:g})'})
+                       'exam': r.exam.title, 'detail': f'Finished the exam ({r.score:g} / {r.total:g})'})
 
     for ev in ExamEvent.objects.filter(
             exam__created_by=me, created_at__gt=since).select_related('student', 'exam'):
         if ev.kind == 'run':
             kind = 'run'
-            detail = f'Tapşırıq {ev.task_number}: nümunəni yoxladı, {ev.passed}/{ev.total} test keçdi'
+            detail = f'Task {ev.task_number}: ran code ({ev.passed}/{ev.total} public tests passed)'
         else:
             kind = 'task'
-            detail = (f'Tapşırıq {ev.task_number}: təhvil verdi, {ev.passed}/{ev.total} test keçdi, '
-                      f'{ev.score:g}/{ev.max_score:g} bal')
+            detail = (f'Task {ev.task_number}: submitted code, {ev.passed}/{ev.total} tests passed, '
+                      f'{ev.score:g}/{ev.max_score:g} points')
         events.append({'t': ev.created_at, 'kind': kind, 'student': name(ev.student),
                        'exam': ev.exam.title, 'detail': detail})
 
@@ -1018,7 +1043,7 @@ def teacher_live_feed_view(request):
     }
     active = []
     for s in ExamSession.objects.filter(
-            exam__created_by=me, started_at__gte=now - timedelta(hours=12)
+            exam__created_by=me, last_seen_at__gte=now - timedelta(seconds=45)
     ).select_related('student', 'exam'):
         key = (s.student_id, s.exam_id)
         if key in finished or not s.exam.is_open(grace_seconds=30):
@@ -1027,6 +1052,7 @@ def teacher_live_feed_view(request):
             'student': name(s.student), 'exam': s.exam.title,
             'warnings': warn_counts.get(key, 0),
             'max': getattr(s.exam, 'max_warnings', 3) or 3,
+            'last_seen': s.last_seen_at.isoformat(),
         })
     active.sort(key=lambda a: -a['warnings'])
 

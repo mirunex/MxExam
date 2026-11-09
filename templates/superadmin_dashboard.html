@@ -1,5 +1,5 @@
 {% extends "superadmin_base.html" %}
-{% block title %}İdarə paneli{% endblock %}
+{% block title %}Dashboard{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -118,20 +118,20 @@ table.t tr:last-child td{border-bottom:0}
 {% block content %}
 <div class="top">
     <div>
-        <p class="kicker">Sistem icmalı</p>
+        <p class="kicker">System overview</p>
         <h1>Superadmin paneli</h1>
-        <p class="sub">Müəssisələri və sistem istifadəçilərini idarə et.</p>
+        <p class="sub">Manage institutions and system users.</p>
     </div>
 
     <a class="btn" href="{% url 'institution_create' %}">
-        ＋ Yeni müəssisə
+        ＋ New institution
     </a>
 </div>
 
 <div class="stats">
     <div class="stat">
         <div class="stat-top">
-            <small>Müəssisələr</small>
+            <small>Institutions</small>
             <div class="stat-icon">⌂</div>
         </div>
         <b>{{ institution_count }}</b>
@@ -139,7 +139,7 @@ table.t tr:last-child td{border-bottom:0}
 
     <div class="stat">
         <div class="stat-top">
-            <small>Adminlər</small>
+            <small>Administrators</small>
             <div class="stat-icon">♙</div>
         </div>
         <b>{{ admin_count }}</b>
@@ -147,7 +147,7 @@ table.t tr:last-child td{border-bottom:0}
 
     <div class="stat">
         <div class="stat-top">
-            <small>Müəllimlər</small>
+            <small>Teachers</small>
             <div class="stat-icon">◉</div>
         </div>
         <b>{{ teacher_count }}</b>
@@ -155,7 +155,7 @@ table.t tr:last-child td{border-bottom:0}
 
     <div class="stat">
         <div class="stat-top">
-            <small>Tələbələr</small>
+            <small>Students</small>
             <div class="stat-icon">◌</div>
         </div>
         <b>{{ student_count }}</b>
@@ -164,16 +164,16 @@ table.t tr:last-child td{border-bottom:0}
 
 <div class="panel">
     <div class="panel-head">
-        <h2>Müəssisələr</h2>
+        <h2>Institutions</h2>
     </div>
 
     <div class="table-wrap">
         <table class="t">
             <thead>
                 <tr>
-                    <th>Müəssisə</th>
-                    <th>Adminlər</th>
-                    <th>Yaradılıb</th>
+                    <th>Institution</th>
+                    <th>Administrators</th>
+                    <th>Created</th>
                     <th></th>
                 </tr>
             </thead>
@@ -205,7 +205,7 @@ table.t tr:last-child td{border-bottom:0}
                 {% empty %}
                 <tr>
                     <td colspan="4" class="empty">
-                        Hələ heç bir müəssisə yaradılmayıb.
+                        No institutions have been created yet.
                     </td>
                 </tr>
                 {% endfor %}

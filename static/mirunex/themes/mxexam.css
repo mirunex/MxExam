@@ -1,0 +1,146 @@
+/* MxExam colors for Mirunex UI */
+[data-project="mxexam"] {
+  --mx-primary: #7c3aed;
+  --mx-primary-hover: #8b5cf6;
+  --mx-primary-text: #a78bfa;
+  --mx-primary-subtle: rgb(124 58 237 / 14%);
+  --mx-ring: #a78bfa;
+}
+/* Shared Mirunex appearance for MxExam pages */
+.mx-body .login-card,
+.mx-body .glass-panel,
+.mx-body .glass-card,
+.mx-body .stat,
+.mx-body .panel,
+.mx-body .card,
+.mx-body .gcard,
+.mx-body .desc-card {
+  color: var(--mx-text);
+  background-color: var(--mx-glass-bg);
+  background-image: linear-gradient(
+    180deg,
+    var(--mx-glass-sheen),
+    transparent 55%
+  );
+  border: 1px solid var(--mx-glass-border);
+  box-shadow: var(--mx-glass-shadow);
+  backdrop-filter: blur(var(--mx-glass-blur));
+  -webkit-backdrop-filter: blur(var(--mx-glass-blur));
+}
+
+.mx-body .sidebar,
+.mx-body .navbar-custom {
+  color: var(--mx-text);
+  background-color: var(--mx-surface);
+  border-color: var(--mx-glass-border);
+  backdrop-filter: blur(var(--mx-glass-blur));
+  -webkit-backdrop-filter: blur(var(--mx-glass-blur));
+}
+
+.mx-body .btn:not(.btn-outline-light):not(.btn-danger):not(.btn-outline-danger),
+.mx-body .btn-primary,
+.mx-body .btn-glass-gradient,
+.mx-body .finish {
+  color: var(--mx-primary-fg);
+  background: var(--mx-primary);
+  border-color: transparent;
+}
+
+.mx-body .btn:not(.btn-danger):hover,
+.mx-body .btn-primary:hover,
+.mx-body .btn-glass-gradient:hover,
+.mx-body .finish:hover {
+  color: var(--mx-primary-fg);
+  background: var(--mx-primary-hover);
+}
+
+.mx-body .form-control,
+.mx-body input:not([type="checkbox"]):not([type="radio"]),
+.mx-body select,
+.mx-body textarea:not(#editor) {
+  color: var(--mx-text) !important;
+  background-color: var(--mx-field-bg) !important;
+  border-color: var(--mx-glass-border) !important;
+}
+
+.mx-body .form-control:focus,
+.mx-body input:focus,
+.mx-body select:focus,
+.mx-body textarea:not(#editor):focus {
+  border-color: var(--mx-ring) !important;
+  box-shadow: 0 0 0 3px var(--mx-focus-halo) !important;
+}
+
+.mx-body .nav-link.active,
+.mx-body nav a.on {
+  color: var(--mx-primary-text);
+  background: var(--mx-primary-subtle);
+}
+
+.mx-body table {
+  color: var(--mx-text);
+  --bs-table-color: var(--mx-text);
+  --bs-table-bg: transparent;
+  --bs-table-border-color: var(--mx-glass-border);
+}
+
+/* Keep Django/Bootstrap messages legible on the dark glass surfaces. */
+.mx-body .alert {
+  color: var(--mx-text);
+  background: var(--mx-primary-subtle);
+  border-color: var(--mx-glass-border);
+  border-radius: var(--mx-radius-lg);
+}
+.mx-body .alert-success {
+  color: var(--mx-success-text);
+  background: color-mix(in srgb, var(--mx-success) 12%, transparent);
+  border-color: color-mix(in srgb, var(--mx-success) 26%, transparent);
+}
+.mx-body .alert-info {
+  color: var(--mx-info-text);
+  background: color-mix(in srgb, var(--mx-info) 12%, transparent);
+  border-color: color-mix(in srgb, var(--mx-info) 26%, transparent);
+}
+.mx-body .alert-warning {
+  color: var(--mx-warning-text);
+  background: color-mix(in srgb, var(--mx-warning) 12%, transparent);
+  border-color: color-mix(in srgb, var(--mx-warning) 26%, transparent);
+}
+.mx-body .alert-danger {
+  color: var(--mx-danger-text);
+  background: color-mix(in srgb, var(--mx-danger) 12%, transparent);
+  border-color: color-mix(in srgb, var(--mx-danger) 26%, transparent);
+}
+
+.teacher-notice-list { display: grid; gap: 8px; }
+.teacher-notice {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 12px;
+  padding: 11px 13px;
+  border: 1px solid var(--mx-glass-border);
+  border-radius: var(--mx-radius-md);
+  background: rgb(255 255 255 / 2%);
+}
+.teacher-notice__mark {
+  width: 8px;
+  height: 8px;
+  margin-top: 6px;
+  border-radius: 50%;
+  background: var(--mx-primary-text);
+}
+.teacher-notice[data-kind="warning"] .teacher-notice__mark { background: var(--mx-warning-text); }
+.teacher-notice[data-kind="submitted"] .teacher-notice__mark { background: var(--mx-success-text); }
+.teacher-notice__title { color: var(--mx-text); font-weight: 550; }
+.teacher-notice__detail, .teacher-notice__meta { color: var(--mx-text-muted); font-size: 12px; }
+.teacher-notice__meta { white-space: nowrap; }
+@media (max-width: 575.98px) {
+  .teacher-notice { grid-template-columns: auto minmax(0, 1fr); }
+  .teacher-notice__meta { grid-column: 2; }
+}
+
+main .mx-footer {
+  justify-content: flex-start;
+  gap: 4px;
+}

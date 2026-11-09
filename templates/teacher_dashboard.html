@@ -1,11 +1,24 @@
 {% extends 'teacher_base.html' %}
-{% block title %}İmtahanlar{% endblock %}
+{% block title %}Exams{% endblock %}
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h4 class="fw-bold mb-0">📋 İmtahanlar</h4>
-    <a href="{% url 'create_exam' %}" class="btn-glass-gradient px-4 py-2">➕ Yeni imtahan yarat</a>
+    <h4 class="fw-bold mb-0">📋 Exams</h4>
+    <a href="{% url 'create_exam' %}" class="btn-glass-gradient px-4 py-2">➕ Create new exam</a>
 </div>
+
+<section class="glass-panel p-3 p-md-4 mb-4" aria-labelledby="recent-activity-title">
+    <div class="d-flex justify-content-between align-items-center gap-3 mb-3">
+        <div>
+            <h5 id="recent-activity-title" class="fw-bold mb-1">Recent student activity</h5>
+            <p class="text-white-50 small mb-0">Exam starts, submissions and integrity alerts</p>
+        </div>
+        <a href="{% url 'teacher_live' %}" class="btn btn-sm btn-outline-light rounded-pill px-3">Live monitor</a>
+    </div>
+    <div id="teacher-notifications" class="teacher-notice-list" aria-live="polite" aria-relevant="additions text">
+        <p class="text-white-50 small mb-0">Loading recent activity…</p>
+    </div>
+</section>
 
 <div class="glass-panel p-4">
     {% if exams %}
@@ -13,12 +26,12 @@
             <table class="table table-dark table-borderless align-middle mb-0" style="--bs-table-bg: transparent;">
                 <thead>
                     <tr class="text-white-50 small">
-                        <th>İmtahan</th>
-                        <th>Növ</th>
-                        <th>Başlama</th>
-                        <th>Müddət</th>
-                        <th>Sual sayı</th>
-                        <th class="text-end">Əməliyyat</th>
+                        <th>Exam</th>
+                        <th>Type</th>
+                        <th>Start</th>
+                        <th>Duration</th>
+                        <th>Question count</th>
+                        <th class="text-end">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -27,14 +40,14 @@
                         <td class="fw-semibold">{{ exam.title }}</td>
                         <td>{{ exam.get_exam_type_display }}</td>
                         <td>{{ exam.start_time|date:"d.m.Y H:i"|default:"—" }}</td>
-                        <td>{{ exam.duration_minutes }} dəq</td>
+                        <td>{{ exam.duration_minutes }} min</td>
                         <td>{{ exam.questions_per_student }}</td>
                     <td class="text-end">
-                        <a href="{% url 'exam_results' exam.id %}" class="btn btn-sm btn-outline-light rounded-pill px-3 me-1">Nəticələr</a>
+                        <a href="{% url 'exam_results' exam.id %}" class="btn btn-sm btn-outline-light rounded-pill px-3 me-1">Results</a>
                         <form action="{% url 'delete_exam' exam.id %}" method="post" class="d-inline"
-                            onsubmit="return confirm('«{{ exam.title }}» imtahanı silinsin? Sualları da silinəcək.');">
+                            onsubmit="return confirm('Delete exam “{{ exam.title }}”? Its questions will also be deleted.');">
                             {% csrf_token %}
-                            <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3">Sil</button>
+                            <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3">Delete</button>
                         </form>
                     </td>
                     </tr>
@@ -43,7 +56,87 @@
             </table>
         </div>
     {% else %}
-        <p class="text-white-50 text-center py-5 mb-0">Hələ imtahan yoxdur. "Yeni imtahan yarat" düyməsi ilə başla.</p>
+        <p class="text-white-50 text-center py-5 mb-0">No exams yet. Click “Create new exam” to get started.</p>
     {% endif %}
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(() => {
+    const list = document.getElementById('teacher-notifications');
+    if (!list) return;
+    const feedUrl = "{% url 'teacher_live_feed' %}";
+    const seen = new Set();
+    let cursor = '';
+    let firstLoad = true;
+    let history = [];
+
+    const labels = {
+        entered: 'Exam started', warning: 'Integrity alert', submitted: 'Exam submitted',
+        run: 'Code checked', task: 'Code submitted'
+    };
+    const relativeTime = (value) => {
+        const seconds = Math.max(0, Math.floor((Date.now() - new Date(value).getTime()) / 1000));
+        if (seconds < 60) return 'just now';
+        if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
+        if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
+        return new Intl.DateTimeFormat('en', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value));
+    };
+    const render = () => {
+        const ordered = history.slice().sort((a, b) => new Date(b.t) - new Date(a.t)).slice(0, 5);
+        if (!ordered.length) {
+            list.innerHTML = '<p class="text-white-50 small mb-0">No recent student activity.</p>';
+            return;
+        }
+        list.replaceChildren(...ordered.map((event) => {
+            const row = document.createElement('article');
+            row.className = 'teacher-notice';
+            row.dataset.kind = event.kind;
+            const mark = document.createElement('span');
+            mark.className = 'teacher-notice__mark';
+            mark.setAttribute('aria-hidden', 'true');
+            const content = document.createElement('div');
+            const title = document.createElement('div');
+            title.className = 'teacher-notice__title small';
+            title.textContent = `${event.student} · ${labels[event.kind] || 'Activity'}`;
+            const detail = document.createElement('div');
+            detail.className = 'teacher-notice__detail';
+            detail.textContent = `${event.exam} — ${event.detail}`;
+            content.append(title, detail);
+            const time = document.createElement('time');
+            time.className = 'teacher-notice__meta';
+            time.dateTime = event.t;
+            time.textContent = relativeTime(event.t);
+            row.append(mark, content, time);
+            return row;
+        }));
+    };
+
+    const refresh = async () => {
+        try {
+            const url = new URL(feedUrl, window.location.origin);
+            if (cursor) url.searchParams.set('since', cursor);
+            const response = await fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+            if (!response.ok) throw new Error('Activity feed unavailable');
+            const data = await response.json();
+            const fresh = [];
+            for (const event of data.events || []) {
+                const key = [event.t, event.kind, event.student, event.exam, event.detail].join('|');
+                if (!seen.has(key)) { seen.add(key); fresh.push(event); }
+            }
+            if (firstLoad) history = fresh;
+            else if (fresh.length) history = [...history, ...fresh].slice(-10);
+            if (firstLoad || fresh.length) render();
+            cursor = data.now || cursor;
+            firstLoad = false;
+        } catch (_) {
+            if (firstLoad) list.innerHTML = '<p class="text-white-50 small mb-0">Activity will appear here when students begin an exam.</p>';
+            firstLoad = false;
+        }
+    };
+    refresh();
+    window.setInterval(refresh, 15000);
+})();
+</script>
 {% endblock %}
