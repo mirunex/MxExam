@@ -135,6 +135,26 @@
 .teacher-notice__title { color: var(--mx-text); font-weight: 550; }
 .teacher-notice__detail, .teacher-notice__meta { color: var(--mx-text-muted); font-size: 12px; }
 .teacher-notice__meta { white-space: nowrap; }
+.mx-password-field {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+  min-width: 0;
+}
+.mx-password-field .form-control { flex: 1 1 auto; min-width: 0; }
+.mx-password-toggle {
+  flex: 0 0 auto;
+  padding: 0 12px;
+  border: 1px solid var(--mx-glass-border);
+  border-radius: var(--mx-radius-sm, 8px);
+  color: var(--mx-text);
+  background: var(--mx-primary-subtle);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.mx-password-toggle:hover { background: var(--mx-primary); }
 @media (max-width: 575.98px) {
   .teacher-notice { grid-template-columns: auto minmax(0, 1fr); }
   .teacher-notice__meta { grid-column: 2; }

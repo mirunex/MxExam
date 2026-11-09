@@ -1,0 +1,62 @@
+{% extends 'teacher_base.html' %}
+{% block title %}{{ group.name }} · Student accounts{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
+    <div>
+        <a href="{% url 'teacher_groups' %}" class="text-white-50 text-decoration-none">← Groups</a>
+        <h4 class="fw-bold mt-2 mb-1">{{ group.name }}</h4>
+        <p class="text-white-50 mb-0">Student accounts assigned to your group</p>
+    </div>
+    <span class="badge rounded-pill text-bg-secondary">{{ students|length }} students</span>
+</div>
+
+<div class="glass-panel p-3 p-md-4">
+    {% if students %}
+    <div class="table-responsive">
+        <table class="table table-dark table-borderless align-middle mb-0" style="--bs-table-bg:transparent;">
+            <thead>
+                <tr class="text-white-50 small">
+                    <th>Student</th>
+                    <th>Username</th>
+                    <th>Email</th>
+                    <th style="min-width:330px">Reset password</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for student in students %}
+                <tr>
+                    <td class="fw-semibold">{{ student.get_full_name|default:student.username }}</td>
+                    <td><code>{{ student.username }}</code></td>
+                    <td>{{ student.email|default:'—' }}</td>
+                    <td>
+                        <form method="post" class="d-grid gap-2">
+                            {% csrf_token %}
+                            <input type="hidden" name="student_id" value="{{ student.id }}">
+                            <div class="mx-password-field">
+                                <input class="form-control" id="new-password-{{ student.id }}" name="new_password"
+                                       type="password" minlength="6" autocomplete="new-password"
+                                       placeholder="New password (at least 6 characters)" required>
+                                <button class="mx-password-toggle" type="button" data-password-toggle="new-password-{{ student.id }}"
+                                        aria-controls="new-password-{{ student.id }}" aria-pressed="false">Show</button>
+                            </div>
+                            <div class="mx-password-field">
+                                <input class="form-control" id="confirm-password-{{ student.id }}" name="confirm_password"
+                                       type="password" minlength="6" autocomplete="new-password"
+                                       placeholder="Confirm new password" required>
+                                <button class="mx-password-toggle" type="button" data-password-toggle="confirm-password-{{ student.id }}"
+                                        aria-controls="confirm-password-{{ student.id }}" aria-pressed="false">Show</button>
+                            </div>
+                            <button class="btn btn-sm btn-glass-gradient rounded-pill" type="submit">Update password</button>
+                        </form>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+        <p class="text-white-50 text-center py-4 mb-0">There are no students in this group yet.</p>
+    {% endif %}
+</div>
+{% endblock %}

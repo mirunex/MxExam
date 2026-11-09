@@ -10,7 +10,14 @@
     {% for field in form %}
       <div style="margin-bottom:14px">
         <label>{{ field.label }}</label>
-        {{ field }}
+        {% if field.name == 'password' %}
+          <div class="mx-password-field">
+            {{ field }}
+            <button class="mx-password-toggle" type="button" data-password-toggle="{{ field.id_for_label }}" aria-controls="{{ field.id_for_label }}" aria-pressed="false">Show</button>
+          </div>
+        {% else %}
+          {{ field }}
+        {% endif %}
         {% for e in field.errors %}<div class="err">{{ e }}</div>{% endfor %}
       </div>
     {% endfor %}

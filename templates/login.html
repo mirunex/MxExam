@@ -104,11 +104,15 @@
                 </div>
                 <div class="mb-4">
                     <label class="form-label fw-semibold text-white-50 small">Password</label>
-                    <input type="password" name="password" class="form-control" placeholder="••••••••" required>
+                    <div class="mx-password-field">
+                        <input type="password" name="password" id="login-password" class="form-control" placeholder="••••••••" required>
+                        <button class="mx-password-toggle" type="button" data-password-toggle="login-password" aria-controls="login-password" aria-pressed="false">Show</button>
+                    </div>
                 </div>
                 <button type="submit" class="btn btn-glass-gradient w-100 py-2.5">Sign in</button>
             </form>
         </div>
     </div>
+    <script src="{% static 'mirunex/password-toggle.js' %}"></script>
 </body>
 </html>

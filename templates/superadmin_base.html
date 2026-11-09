@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en" data-theme="dark" data-project="mxexam">
 <head>
@@ -320,5 +321,6 @@ main .mx-footer {
 </main>
 
 {% block extra_js %}{% endblock %}
+<script src="{% static 'mirunex/password-toggle.js' %}"></script>
 </body>
 </html>

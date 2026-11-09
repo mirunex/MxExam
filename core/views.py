@@ -527,13 +527,56 @@ def teacher_groups(request):
         groups = Group.objects.none()
     else:
         groups = (
-            Group.objects.filter(institution=institution)
+            Group.objects.filter(institution=institution, teacher=request.user)
             .select_related('teacher')
             .prefetch_related('students')
             .order_by('name')
         )
 
     return render(request, 'teacher_groups.html', {'groups': groups})
+
+
+@login_required
+def teacher_group_detail(request, group_id):
+    if not request.user.is_teacher() or request.user.institution is None:
+        return redirect('dashboard')
+
+    group = get_object_or_404(
+        Group.objects.prefetch_related('students'),
+        id=group_id,
+        institution=request.user.institution,
+        teacher=request.user,
+    )
+
+    if request.method == 'POST':
+        student = group.students.filter(
+            id=request.POST.get('student_id'), role='student'
+        ).first()
+        password = request.POST.get('new_password', '')
+        confirmation = request.POST.get('confirm_password', '')
+
+        if student is None:
+            messages.error(request, 'That student is not in your group.')
+        elif len(password) < 6:
+            messages.error(request, 'The new password must be at least 6 characters.')
+        elif password != confirmation:
+            messages.error(request, 'The passwords do not match.')
+        else:
+            student.set_password(password)
+            student.save(update_fields=['password'])
+            messages.success(
+                request,
+                f'Password updated for {student.get_full_name() or student.username}.',
+            )
+        return redirect('teacher_group_detail', group_id=group.id)
+
+    students = group.students.filter(role='student').order_by(
+        'last_name', 'first_name', 'username'
+    )
+    return render(request, 'teacher_group_detail.html', {
+        'group': group,
+        'students': students,
+    })
 
 
 @login_required

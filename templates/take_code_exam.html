@@ -189,7 +189,7 @@
   {% csrf_token %}
   <div class="page">
     <header class="card topbar">
-      <div class="brand">Exam<span>Guard</span></div>
+      <div class="brand">MxExam</div>
       <div class="sep"></div>
       <div class="ttl">{{ exam.title }}</div>
     </header>
@@ -247,7 +247,7 @@
             <div class="dd-list" id="ddList" hidden></div>
           </div>
 
-          <span class="chip" id="langChip">Python</span>
+          <span class="chip" id="langChip">{% if tasks %}{{ tasks.0.get_language_display }}{% else %}Python{% endif %}</span>
         </div>
       </section>
       {% endif %}
@@ -257,7 +257,7 @@
       {% for task in tasks %}
         <div class="desc" data-id="{{ task.id }}" hidden>
           <section class="card desc-card">
-            <h3 class="dh"><span>Task details</span><small>TASK {{ forloop.counter }} / {{ tasks|length }} &middot; {{ task.points }} points</small></h3>
+            <h3 class="dh"><span>Task details</span><small>{{ task.get_language_display }} · TASK {{ forloop.counter }} / {{ tasks|length }} · {{ task.points }} points</small></h3>
             <div class="desc-scroll">
 
               <div class="task-desc" data-l="en" hidden>{{ task.d_en|format_task }}</div>
@@ -278,7 +278,7 @@
 
       {% if tasks %}
         <section class="card toolbar">
-          <span class="lbl" style="margin:0">Dil: <b style="color:#fff" id="langName">Python</b></span>
+          <span class="lbl" style="margin:0">Language: <b style="color:#fff" id="langName">{% if tasks %}{{ tasks.0.get_language_display }}{% else %}Python{% endif %}</b></span>
           <div class="btns">
             <button type="button" class="btn reset" id="resetBtn">Reset code</button>
             <button type="button" class="btn run" id="runBtn">&#9654; Run public tests</button>

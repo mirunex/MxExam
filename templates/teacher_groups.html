@@ -20,7 +20,9 @@
                 Teacher: {{ g.teacher.get_full_name|default:g.teacher.username }}
             </div>
         </div>
-        <div class="text-white-50">{{ g.students.all|length }} student</div>
+        <a class="btn btn-sm btn-outline-light rounded-pill px-3" href="{% url 'teacher_group_detail' g.id %}">
+            Manage student accounts · {{ g.students.all|length }}
+        </a>
     </div>
 
     {% if g.students.all %}
